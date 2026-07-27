@@ -34,4 +34,6 @@
 - [x] Sección Settings en panel admin (tarifas, textos del sitio, medios de contacto)
 - [x] Conectar frontend público a datos dinámicos de configuración
 - [x] Tests de vitest para configuración (4 tests, todos pasan)
-- [ ] Guardar checkpoint y entregar al usuario
+- [x] Guardar checkpoint y entregar al usuario
+- [x] Subir código a GitHub (Gercho420/German_HQ)
+- [x] Botón "Reserva tu clase" enlaza directamente a WhatsApp

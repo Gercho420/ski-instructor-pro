@@ -1,4 +1,5 @@
 import { useI18n } from "@/i18n/I18nContext";
+import { trpc } from "@/lib/trpc";
 import { LANGS, LANG_FLAGS, type Lang } from "@/i18n/translations";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,12 +8,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, Globe, ChevronDown } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Menu, X, Globe, ChevronDown, MessageCircle } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 
 export default function Navbar() {
   const { t, lang, setLang } = useI18n();
+  const { data: contactConfig } = trpc.config.getByCategory.useQuery({ category: "contact" });
+
+  const waNumber = useMemo(() => {
+    if (!contactConfig) return "34600000000";
+    const entry = contactConfig.find(c => c.configKey === "whatsapp");
+    const number = entry?.configValue || "+34 600 000 000";
+    return number.replace(/[^0-9]/g, "");
+  }, [contactConfig]);
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [location] = useLocation();
@@ -96,7 +105,10 @@ export default function Navbar() {
             variant="default"
             className="hidden md:inline-flex rounded-full bg-[oklch(0.55_0.08_295)] hover:bg-[oklch(0.50_0.09_295)] text-[oklch(0.98_0.01_300)] font-sans text-sm tracking-wider px-6 py-2 transition-all duration-200 active:scale-95"
           >
-            <a href="/#contact">{t("nav.bookNow")}</a>
+            <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer">
+              <MessageCircle className="w-4 h-4 mr-1.5" />
+              {t("nav.bookNow")}
+            </a>
           </Button>
 
           {/* Mobile menu toggle */}
@@ -126,7 +138,10 @@ export default function Navbar() {
               asChild
               className="rounded-full bg-[oklch(0.55_0.08_295)] hover:bg-[oklch(0.50_0.09_295)] text-[oklch(0.98_0.01_300)] font-sans text-sm tracking-wider w-full"
             >
-              <a href="/#contact">{t("nav.bookNow")}</a>
+              <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="w-4 h-4 mr-2" />
+                {t("nav.bookNow")}
+              </a>
             </Button>
           </div>
         </div>

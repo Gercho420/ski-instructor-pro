@@ -3,10 +3,19 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { useMemo } from "react";
+import { MessageCircle } from "lucide-react";
 
 export default function Hero() {
   const { t, lang } = useI18n();
   const { data: textsConfig } = trpc.config.getByCategory.useQuery({ category: `texts_${lang}` });
+  const { data: contactConfig } = trpc.config.getByCategory.useQuery({ category: "contact" });
+
+  const waNumber = useMemo(() => {
+    if (!contactConfig) return "34600000000";
+    const entry = contactConfig.find(c => c.configKey === "whatsapp");
+    const number = entry?.configValue || "+34 600 000 000";
+    return number.replace(/[^0-9]/g, "");
+  }, [contactConfig]);
 
   const heroTexts = useMemo(() => {
     if (!textsConfig) return {
@@ -62,7 +71,10 @@ export default function Hero() {
             asChild
             className="rounded-full bg-[oklch(0.55_0.08_295)] hover:bg-[oklch(0.50_0.09_295)] text-[oklch(0.98_0.01_300)] font-sans text-sm tracking-wider px-8 py-3 transition-all duration-200 active:scale-95 shadow-lg shadow-[oklch(0.55_0.08_295/0.2)]"
           >
-            <a href="/#contact">{t("hero.cta")}</a>
+            <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer">
+              <MessageCircle className="w-4 h-4 mr-2" />
+              {t("hero.cta")}
+            </a>
           </Button>
           <Button
             asChild
