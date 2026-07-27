@@ -38,7 +38,7 @@ export default function Hero() {
       <div className="absolute inset-0 z-0">
         <img
           src="/manus-storage/hero-ski_c1cd739e.jpg"
-          alt=""
+          alt="Instructor de ski profesional en la montaña, clases personalizadas de ski en Argentina"
           className="w-full h-full object-cover opacity-30"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[oklch(0.98_0.015_300/0.5)] via-[oklch(0.98_0.015_300/0.3)] to-[oklch(0.98_0.015_300/0.8)]" />

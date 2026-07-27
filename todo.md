@@ -37,3 +37,11 @@
 - [x] Guardar checkpoint y entregar al usuario
 - [x] Subir código a GitHub (Gercho420/German_HQ)
 - [x] Botón "Reserva tu clase" enlaza directamente a WhatsApp
+- [x] Fase 1 SEO: Agregar meta description
+- [x] Fase 1 SEO: Mejorar <title> con keywords
+- [x] Fase 1 SEO: Agregar canonical URL
+- [x] Fase 1 SEO: Agregar Open Graph tags
+- [x] Fase 1 SEO: Agregar favicon
+- [x] Fase 1 SEO: Agregar alt text al hero
+- [x] Fase 1 SEO: Eliminar reseñas ficticias
+- [x] Fase 1 SEO: Guardar checkpoint y entregar
