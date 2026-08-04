@@ -45,8 +45,8 @@
 - [x] Fase 1 SEO: Agregar alt text al hero
 - [x] Fase 1 SEO: Eliminar reseñas ficticias
 - [x] Fase 1 SEO: Guardar checkpoint y entregar
-- [ ] Botones de compartir en redes sociales (Facebook, WhatsApp, Twitter/X, copiar enlace)
+- [x] Botones de compartir en redes sociales (Facebook, WhatsApp, Twitter/X, copiar enlace)
 - [x] Corregir error de build (canonical link href='/' causa EISDIR en vite 7.1.9, cambiado a meta tag + removido favicon.svg)
-- [ ] Campo de configuración para link del estado de la montaña
-- [ ] Botón "Estado de la montaña" en la página de inicio
-- [ ] Botones de compartir en redes sociales (Facebook, WhatsApp, Twitter/X, copiar enlace)
+- [x] Campo de configuración para link del estado de la montaña (admin → Settings → Contact → mountain_status_url)
+- [x] Botón "Estado de la montaña" en la página de inicio (Hero.tsx, se muestra solo si hay URL configurada)
+- [x] Botones de compartir en redes sociales (Facebook, WhatsApp, Twitter/X, copiar enlace)

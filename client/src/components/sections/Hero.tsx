@@ -1,7 +1,7 @@
 import { useI18n } from "@/i18n/I18nContext";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Mountain, ExternalLink } from "lucide-react";
 import { useMemo } from "react";
 import { MessageCircle } from "lucide-react";
 
@@ -15,6 +15,12 @@ export default function Hero() {
     const entry = contactConfig.find(c => c.configKey === "whatsapp");
     const number = entry?.configValue || "+34 600 000 000";
     return number.replace(/[^0-9]/g, "");
+  }, [contactConfig]);
+
+  const mountainStatusUrl = useMemo(() => {
+    if (!contactConfig) return "";
+    const entry = contactConfig.find(c => c.configKey === "mountain_status_url");
+    return entry?.configValue || "";
   }, [contactConfig]);
 
   const heroTexts = useMemo(() => {
@@ -76,6 +82,19 @@ export default function Hero() {
               {t("hero.cta")}
             </a>
           </Button>
+          {mountainStatusUrl && (
+            <Button
+              asChild
+              variant="ghost"
+              className="rounded-full font-sans text-sm tracking-wider px-8 py-3 text-[oklch(0.40_0.04_295)] hover:text-[oklch(0.55_0.08_295)] hover:bg-transparent border border-[oklch(0.70_0.04_295/0.3)] transition-all duration-200"
+            >
+              <a href={mountainStatusUrl} target="_blank" rel="noopener noreferrer">
+                <Mountain className="w-4 h-4 mr-2" />
+                {t("hero.mountainStatus")}
+                <ExternalLink className="w-3 h-3 ml-1 opacity-50" />
+              </a>
+            </Button>
+          )}
           <Button
             asChild
             variant="ghost"

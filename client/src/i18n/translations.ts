@@ -162,6 +162,14 @@ export const translations: Record<Lang, TranslationDict> = {
     "admin.settings.email": "Email",
     "admin.settings.instagram": "Instagram",
     "admin.settings.location": "Ubicación",
+    "admin.settings.mountainStatus": "Estado de la montaña",
+    "admin.settings.mountainStatusUrl": "URL del estado de la montaña",
+    "admin.settings.mountainStatusUrlPlaceholder": "https://ejemplo.com/estado-montana",
+
+    // Mountain status button
+    "hero.mountainStatus": "Estado de la montaña",
+
+    // Share
     "admin.settings.footer": "Pie de página",
     "admin.settings.footerTagline": "Eslogan",
   },
@@ -311,6 +319,14 @@ export const translations: Record<Lang, TranslationDict> = {
     "admin.settings.email": "Email",
     "admin.settings.instagram": "Instagram",
     "admin.settings.location": "Location",
+    "admin.settings.mountainStatus": "Mountain status",
+    "admin.settings.mountainStatusUrl": "Mountain status URL",
+    "admin.settings.mountainStatusUrlPlaceholder": "https://example.com/mountain-status",
+
+    // Mountain status button
+    "hero.mountainStatus": "Mountain status",
+
+    // Share
     "admin.settings.footer": "Footer",
     "admin.settings.footerTagline": "Tagline",
   },
@@ -460,6 +476,13 @@ export const translations: Record<Lang, TranslationDict> = {
     "admin.settings.email": "E-mail",
     "admin.settings.instagram": "Instagram",
     "admin.settings.location": "Localização",
+    "admin.settings.mountainStatus": "Estado da montanha",
+    "admin.settings.mountainStatusUrl": "URL do estado da montanha",
+    "admin.settings.mountainStatusUrlPlaceholder": "https://exemplo.com/estado-montanha",
+
+    // Mountain status button
+    "hero.mountainStatus": "Estado da montanha",
+    // Share
     "admin.settings.footer": "Rodapé",
     "admin.settings.footerTagline": "Slogan",
   },

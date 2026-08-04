@@ -420,6 +420,7 @@ function SettingsAdmin({ lang, t }: { lang: string; t: (key: string) => string }
     email: "",
     instagram: "",
     location: "",
+    mountainStatusUrl: "",
   });
 
   // Load pricing from DB into local state
@@ -461,6 +462,7 @@ function SettingsAdmin({ lang, t }: { lang: string; t: (key: string) => string }
         email: contactData.find(r => r.configKey === "email")?.configValue || "contact@skipro.com",
         instagram: contactData.find(r => r.configKey === "instagram")?.configValue || "@skipro",
         location: contactData.find(r => r.configKey === "location")?.configValue || "Buenos Aires, Argentina",
+        mountainStatusUrl: contactData.find(r => r.configKey === "mountain_status_url")?.configValue || "",
       });
     }
   }, [contactData]);
@@ -501,6 +503,7 @@ function SettingsAdmin({ lang, t }: { lang: string; t: (key: string) => string }
       { configKey: "email", configValue: contact.email },
       { configKey: "instagram", configValue: contact.instagram },
       { configKey: "location", configValue: contact.location },
+      { configKey: "mountain_status_url", configValue: contact.mountainStatusUrl },
     ];
     try {
       await saveMutation.mutateAsync({ category: "contact", items });
@@ -699,6 +702,16 @@ function SettingsAdmin({ lang, t }: { lang: string; t: (key: string) => string }
                 placeholder="Buenos Aires, Argentina"
                 className="rounded-lg bg-[oklch(0.98_0.015_300)] border-[oklch(0.90_0.02_300)]"
               />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="text-xs font-sans font-light tracking-wider uppercase text-[oklch(0.50_0.04_295)] mb-2 block">{t("admin.settings.mountainStatusUrl")}</label>
+              <Input
+                value={contact.mountainStatusUrl}
+                onChange={(e) => setContact(prev => ({ ...prev, mountainStatusUrl: e.target.value }))}
+                placeholder={t("admin.settings.mountainStatusUrlPlaceholder")}
+                className="rounded-lg bg-[oklch(0.98_0.015_300)] border-[oklch(0.90_0.02_300)]"
+              />
+              <p className="text-xs font-sans text-[oklch(0.50_0.04_295/0.7)] mt-1">{t("admin.settings.mountainStatus")}</p>
             </div>
             <div className="sm:col-span-2">
               <Button
