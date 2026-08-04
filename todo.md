@@ -50,3 +50,4 @@
 - [x] Campo de configuración para link del estado de la montaña (admin → Settings → Contact → mountain_status_url)
 - [x] Botón "Estado de la montaña" en la página de inicio (Hero.tsx, se muestra solo si hay URL configurada)
 - [x] Botones de compartir en redes sociales (Facebook, WhatsApp, Twitter/X, copiar enlace)
+- [x] Corregir botón de WhatsApp para usar el número configurado en Settings (agregar invalidate en admin)

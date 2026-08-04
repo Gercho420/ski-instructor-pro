@@ -475,6 +475,7 @@ function SettingsAdmin({ lang, t }: { lang: string; t: (key: string) => string }
     ]);
     try {
       await saveMutation.mutateAsync({ category: `pricing_${settingsLang}`, items });
+      await utils.config.getByCategory.invalidate({ category: `pricing_${settingsLang}` });
       toast.success(t("admin.settings.saved"));
     } catch {
       toast.error(t("admin.settings.error"));
@@ -491,6 +492,7 @@ function SettingsAdmin({ lang, t }: { lang: string; t: (key: string) => string }
     ];
     try {
       await saveMutation.mutateAsync({ category: `texts_${settingsLang}`, items });
+      await utils.config.getByCategory.invalidate({ category: `texts_${settingsLang}` });
       toast.success(t("admin.settings.saved"));
     } catch {
       toast.error(t("admin.settings.error"));
@@ -507,6 +509,7 @@ function SettingsAdmin({ lang, t }: { lang: string; t: (key: string) => string }
     ];
     try {
       await saveMutation.mutateAsync({ category: "contact", items });
+      await utils.config.getByCategory.invalidate({ category: "contact" });
       toast.success(t("admin.settings.saved"));
     } catch {
       toast.error(t("admin.settings.error"));
