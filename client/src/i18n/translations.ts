@@ -96,6 +96,14 @@ export const translations: Record<Lang, TranslationDict> = {
     "contact.info.instagram": "Instagram",
     "contact.info.location": "Ubicación",
 
+    // Share
+    "share.title": "Compartir",
+    "share.facebook": "Facebook",
+    "share.twitter": "Twitter",
+    "share.whatsapp": "WhatsApp",
+    "share.copyLink": "Copiar enlace",
+    "share.copied": "¡Enlace copiado!",
+
     // Footer
     "footer.rights": "Todos los derechos reservados.",
     "footer.tagline": "Clases de ski personalizadas para todos los niveles.",
@@ -237,6 +245,14 @@ export const translations: Record<Lang, TranslationDict> = {
     "contact.info.instagram": "Instagram",
     "contact.info.location": "Location",
 
+    // Share
+    "share.title": "Share",
+    "share.facebook": "Facebook",
+    "share.twitter": "Twitter",
+    "share.whatsapp": "WhatsApp",
+    "share.copyLink": "Copy link",
+    "share.copied": "Link copied!",
+
     // Footer
     "footer.rights": "All rights reserved.",
     "footer.tagline": "Personalized ski lessons for all levels.",
@@ -377,6 +393,14 @@ export const translations: Record<Lang, TranslationDict> = {
     "contact.info.email": "E-mail",
     "contact.info.instagram": "Instagram",
     "contact.info.location": "Localização",
+
+    // Share
+    "share.title": "Compartilhar",
+    "share.facebook": "Facebook",
+    "share.twitter": "Twitter",
+    "share.whatsapp": "WhatsApp",
+    "share.copyLink": "Copiar link",
+    "share.copied": "Link copiado!",
 
     // Footer
     "footer.rights": "Todos os direitos reservados.",

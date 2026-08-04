@@ -2,6 +2,7 @@ import { useI18n } from "@/i18n/I18nContext";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import { useMemo } from "react";
+import ShareButtons from "@/components/ShareButtons";
 
 export default function Footer() {
   const { t, lang } = useI18n();
@@ -27,6 +28,9 @@ export default function Footer() {
             {footerTagline}
           </p>
         </div>
+
+        {/* Share buttons */}
+        <ShareButtons />
 
         <div className="flex items-center gap-6 text-xs font-sans font-light tracking-widest uppercase text-[oklch(0.50_0.03_295)]">
           <a href="/#services" className="hover:text-[oklch(0.55_0.08_295)] transition-colors">{t("nav.services")}</a>
