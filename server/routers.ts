@@ -1,216 +1,34 @@
 import { COOKIE_NAME } from "@shared/const";
-import { getSessionCookieOptions } from "./_core/cookies";
-import { notifyOwner } from "./_core/notification";
-import { systemRouter } from "./_core/systemRouter";
-import { adminProcedure, publicProcedure, protectedProcedure, router } from "./_core/trpc";
-import {
-  createContactMessage,
-  createGalleryPhoto,
-  createReview,
-  deleteContactMessage,
-  deleteGalleryPhoto,
-  deleteReview,
-  getAllConfig,
-  getAllContactMessages,
-  getAllReviews,
-  getApprovedReviews,
-  getConfigByCategory,
-  getGalleryPhotos,
-  markContactMessageRead,
-  updateGalleryPhoto,
-  updateReviewStatus,
-  upsertConfigs,
-} from "./db";
-import { storagePut } from "./storage";
 import { z } from "zod";
+import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
+import { createSessionToken, loginWithPassword } from "../_core/auth";
 
-export const appRouter = router({
-  system: systemRouter,
+const isProd = process.env.NODE_ENV === "production";
 
-  auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
-    logout: publicProcedure.mutation(({ ctx }) => {
-      const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return { success: true } as const;
+const SESSION_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none" as const,
+  path: "/",
+  maxAge: 1000 * 60 * 60 * 24 * 365,
+};
+
+export const authRouter = router({
+  login: publicProcedure
+    .input(z.object({ email: z.string().email(), password: z.string().min(1) }))
+    .mutation(async ({ input, ctx }) => {
+      const { user, token } = await loginWithPassword(input.email, input.password);
+      ctx.res.cookie(COOKIE_NAME, token, SESSION_COOKIE_OPTIONS);
+      return { id: user.id, email: user.email, name: user.name, role: user.role };
     }),
+
+  logout: publicProcedure.mutation(async ({ ctx }) => {
+    ctx.res.clearCookie(COOKIE_NAME, { ...SESSION_COOKIE_OPTIONS, maxAge: -1 });
+    return { success: true };
   }),
 
-  // ===== Gallery =====
-  gallery: router({
-    list: publicProcedure.query(async () => {
-      return await getGalleryPhotos();
-    }),
-
-    upload: adminProcedure
-      .input(z.object({
-        fileName: z.string().min(1),
-        fileBase64: z.string().min(1),
-        contentType: z.string().default("image/jpeg"),
-        title: z.string().optional(),
-        description: z.string().optional(),
-        category: z.string().optional(),
-      }))
-      .mutation(async ({ input }) => {
-        const buffer = Buffer.from(input.fileBase64, "base64");
-        const { key, url } = await storagePut(`gallery/${input.fileName}`, buffer, input.contentType);
-        const photo = await createGalleryPhoto({
-          imageUrl: url,
-          storageKey: key,
-          title: input.title || null,
-          description: input.description || null,
-          category: input.category || null,
-        });
-        return photo;
-      }),
-
-    update: adminProcedure
-      .input(z.object({
-        id: z.number(),
-        title: z.string().optional(),
-        description: z.string().optional(),
-        category: z.string().optional(),
-        sortOrder: z.number().optional(),
-      }))
-      .mutation(async ({ input }) => {
-        const { id, ...data } = input;
-        await updateGalleryPhoto(id, data);
-        return { success: true };
-      }),
-
-    delete: adminProcedure
-      .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
-        await deleteGalleryPhoto(input.id);
-        return { success: true };
-      }),
-  }),
-
-  // ===== Reviews =====
-  reviews: router({
-    listApproved: publicProcedure.query(async () => {
-      return await getApprovedReviews();
-    }),
-
-    listAll: adminProcedure.query(async () => {
-      return await getAllReviews();
-    }),
-
-    create: publicProcedure
-      .input(z.object({
-        authorName: z.string().min(1).max(255),
-        rating: z.number().int().min(1).max(5),
-        comment: z.string().min(1).max(2000),
-        lang: z.string().max(10).default("es"),
-      }))
-      .mutation(async ({ input }) => {
-        const review = await createReview(input);
-        // Notify the instructor about the new review
-        try {
-          await notifyOwner({
-            title: "Nueva reseña recibida",
-            content: `${input.authorName} dejó una reseña de ${input.rating} estrellas:\n\n${input.comment}`,
-          });
-        } catch (e) {
-          console.warn("[Reviews] Failed to notify owner:", e);
-        }
-        return review;
-      }),
-
-    approve: adminProcedure
-      .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
-        await updateReviewStatus(input.id, "approved");
-        return { success: true };
-      }),
-
-    reject: adminProcedure
-      .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
-        await updateReviewStatus(input.id, "rejected");
-        return { success: true };
-      }),
-
-    delete: adminProcedure
-      .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
-        await deleteReview(input.id);
-        return { success: true };
-      }),
-  }),
-
-  // ===== Site Config =====
-  config: router({
-    getAll: publicProcedure.query(async () => {
-      return await getAllConfig();
-    }),
-
-    getByCategory: publicProcedure
-      .input(z.object({ category: z.string().max(64) }))
-      .query(async ({ input }) => {
-        return await getConfigByCategory(input.category);
-      }),
-
-    save: adminProcedure
-      .input(z.object({
-        category: z.string().max(64),
-        items: z.array(z.object({
-          configKey: z.string().max(128),
-          configValue: z.string(),
-        })),
-      }))
-      .mutation(async ({ input }) => {
-        const items = input.items.map(item => ({
-          category: input.category,
-          configKey: item.configKey,
-          configValue: item.configValue,
-        }));
-        await upsertConfigs(items);
-        return { success: true };
-      }),
-  }),
-
-  // ===== Contact =====
-  contact: router({
-    submit: publicProcedure
-      .input(z.object({
-        name: z.string().min(1).max(255),
-        email: z.string().email().max(320),
-        message: z.string().min(1).max(5000),
-        lang: z.string().max(10).default("es"),
-      }))
-      .mutation(async ({ input }) => {
-        const msg = await createContactMessage(input);
-        // Notify the instructor about the new contact message
-        try {
-          await notifyOwner({
-            title: "Nuevo mensaje de contacto",
-            content: `Nombre: ${input.name}\nEmail: ${input.email}\n\n${input.message}`,
-          });
-        } catch (e) {
-          console.warn("[Contact] Failed to notify owner:", e);
-        }
-        return { success: true };
-      }),
-
-    listAll: adminProcedure.query(async () => {
-      return await getAllContactMessages();
-    }),
-
-    markRead: adminProcedure
-      .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
-        await markContactMessageRead(input.id);
-        return { success: true };
-      }),
-
-    delete: adminProcedure
-      .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
-        await deleteContactMessage(input.id);
-        return { success: true };
-      }),
+  me: protectedProcedure.query(({ ctx }) => {
+    const { id, email, name, role } = ctx.user;
+    return { id, email, name, role };
   }),
 });
-
-export type AppRouter = typeof appRouter;
