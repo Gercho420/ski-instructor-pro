@@ -1,7 +1,21 @@
-import { db } from "../server/db.js";
-import { users } from "../drizzle/schema.ts";
+import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
+import { users } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
+import * as dotenv from "dotenv";
+
+dotenv.config();
+
+const connectionString = process.env.MYSQL_URL || process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error("Falta la variable de entorno MYSQL_URL o DATABASE_URL");
+  process.exit(1);
+}
+
+const connection = await mysql.createConnection(connectionString);
+const db = drizzle(connection);
 
 function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString("hex");
@@ -10,11 +24,6 @@ function hashPassword(password: string): string {
 }
 
 async function createAdmin() {
-  if (!db) {
-    console.error("Error: La conexión 'db' no está disponible. Verifica tu DATABASE_URL en Railway.");
-    process.exit(1);
-  }
-
   const email = "admin@skipro.com";
   const plainPassword = "admin123";
   const hashedPassword = hashPassword(plainPassword);
@@ -40,6 +49,7 @@ async function createAdmin() {
 
   console.log(`Email: ${email}`);
   console.log(`Password: ${plainPassword}`);
+  await connection.end();
   process.exit(0);
 }
 
