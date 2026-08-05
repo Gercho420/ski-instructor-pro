@@ -30,8 +30,11 @@ export const authRouter = router({
   login: publicProcedure
     .input(z.object({ email: z.string().email(), password: z.string().min(1) }))
     .mutation(async ({ input, ctx }) => {
-      const { user, token } = await loginWithPassword(input.email, input.password);
-      ctx.res.cookie(COOKIE_NAME, token, SESSION_COOKIE_OPTIONS);
+      const user = await loginWithPassword(input.email, input.password);
+      if (!user) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciales inválidas" });
+      }
+      ctx.res.cookie(COOKIE_NAME, user.email, SESSION_COOKIE_OPTIONS);
       return { id: user.id, email: user.email, name: user.name, role: user.role };
     }),
 
@@ -48,7 +51,8 @@ export const authRouter = router({
 
 export const galleryRouter = router({
   list: publicProcedure.query(async () => {
-    return db.getGalleryPhotos();
+    const photos = await db.getGalleryPhotos();
+    return Array.isArray(photos) ? photos : [];
   }),
 
   upload: adminProcedure
@@ -86,7 +90,8 @@ export const galleryRouter = router({
 
 export const reviewsRouter = router({
   listApproved: publicProcedure.query(async () => {
-    return db.getApprovedReviews();
+    const reviews = await db.getApprovedReviews();
+    return Array.isArray(reviews) ? reviews : [];
   }),
 
   create: publicProcedure
@@ -135,7 +140,8 @@ export const contactRouter = router({
     }),
 
   listAll: adminProcedure.query(async () => {
-    return db.getAllContactMessages();
+    const messages = await db.getAllContactMessages();
+    return Array.isArray(messages) ? messages : [];
   }),
 });
 
@@ -143,7 +149,8 @@ export const configRouter = router({
   getByCategory: publicProcedure
     .input(z.object({ category: z.string() }))
     .query(async ({ input }) => {
-      return db.getConfigByCategory(input.category);
+      const config = await db.getConfigByCategory(input.category);
+      return Array.isArray(config) ? config : [];
     }),
 
   save: adminProcedure
