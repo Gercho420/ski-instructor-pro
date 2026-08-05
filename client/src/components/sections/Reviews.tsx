@@ -9,11 +9,28 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { toast } from "sonner";
 import { useState } from "react";
 
+type Review = {
+  id: number;
+  authorName: string;
+  rating: number;
+  comment: string;
+  approved: string;
+  lang: string | null;
+  createdAt: Date;
+};
+
 export default function Reviews() {
   const { t, lang } = useI18n();
-  const { data: reviews, isLoading } = trpc.reviews.listApproved.useQuery();
+  const { data: reviewsData, isLoading } = trpc.reviews.listApproved.useQuery();
   const createReview = trpc.reviews.create.useMutation();
   const utils = trpc.useUtils();
+
+  // Blindaje para garantizar que reviews sea siempre un array seguro
+  const reviews = Array.isArray(reviewsData)
+    ? reviewsData
+    : Array.isArray((reviewsData as any)?.reviews)
+    ? (reviewsData as any).reviews
+    : [];
 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -61,7 +78,7 @@ export default function Reviews() {
               <Skeleton key={i} className="h-40 rounded-lg" />
             ))}
           </div>
-        ) : !reviews || reviews.length === 0 ? (
+        ) : reviews.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-lg font-sans font-light tracking-wide text-[oklch(0.50_0.03_295)] mb-8">
               {t("reviews.empty")}
@@ -69,7 +86,7 @@ export default function Reviews() {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-6 mb-12">
-            {reviews.map((review) => (
+            {reviews.map((review: Review) => (
               <div
                 key={review.id}
                 className="corner-bracket p-6 bg-[oklch(0.97_0.012_300/0.5)] backdrop-blur-sm rounded-lg border border-[oklch(0.90_0.02_300/0.3)]"
@@ -78,7 +95,7 @@ export default function Reviews() {
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[oklch(0.85_0.06_295/0.4)] to-[oklch(0.88_0.04_350/0.3)] flex items-center justify-center">
                       <span className="font-serif text-sm text-[oklch(0.40_0.05_295)]">
-                        {review.authorName.charAt(0).toUpperCase()}
+                        {review.authorName?.charAt(0)?.toUpperCase() || "A"}
                       </span>
                     </div>
                     <div>
