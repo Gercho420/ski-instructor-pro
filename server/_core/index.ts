@@ -2,7 +2,6 @@ import express from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { createContext } from "./context";
 import { appRouter } from "../routers";
-import { ENV } from "./env";
 import path from "path";
 
 const app = express();
@@ -19,16 +18,16 @@ app.use(
   })
 );
 
-// Servir cliente estático en producción
-if (ENV.isProd) {
-  const publicPath = path.resolve(__dirname, "public");
-  app.use(express.static(publicPath));
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(publicPath, "index.html"));
-  });
-}
+// Servir frontend en producción
+const publicPath = path.resolve(__dirname, "public");
+app.use(express.static(publicPath));
 
-const port = ENV.port || 5000;
-app.listen(port, () => {
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(publicPath, "index.html"));
+});
+
+// Escuchar en el puerto dinámico de Railway
+const port = process.env.PORT || 5000;
+app.listen(port, "0.0.0.0", () => {
   console.log(`🚀 Servidor ejecutándose en el puerto ${port}`);
 });
