@@ -1,21 +1,14 @@
-// Preconfigured storage helpers for Manus WebDev templates
-// Uploads via Forge Server presigned URL to S3 (PUT direct).
-// Downloads return /manus-storage/{key} paths served via 307 redirect.
+// Storage local en disco, pensado para correr en Railway con un Volume montado.
+// Las fotos se guardan en UPLOADS_DIR y se sirven via express.static en /uploads/*
+// (ver server/_core/index.ts). IMPORTANTE: sin un Volume de Railway montado en
+// UPLOADS_DIR, los archivos se pierden en cada redeploy (el filesystem del
+// contenedor es efimero).
 
-import { ENV } from "./_core/env";
+import fs from "fs/promises";
+import path from "path";
+import crypto from "crypto";
 
-function getForgeConfig() {
-  const forgeUrl = ENV.forgeApiUrl;
-  const forgeKey = ENV.forgeApiKey;
-
-  if (!forgeUrl || !forgeKey) {
-    throw new Error(
-      "Storage config missing: set BUILT_IN_FORGE_API_URL and BUILT_IN_FORGE_API_KEY",
-    );
-  }
-
-  return { forgeUrl: forgeUrl.replace(/\/+$/, ""), forgeKey };
-}
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.resolve(process.cwd(), "uploads");
 
 function normalizeKey(relKey: string): string {
   return relKey.replace(/^\/+/, "");
@@ -33,65 +26,34 @@ export async function storagePut(
   data: Buffer | Uint8Array | string,
   contentType = "application/octet-stream",
 ): Promise<{ key: string; url: string }> {
-  const { forgeUrl, forgeKey } = getForgeConfig();
   const key = appendHashSuffix(normalizeKey(relKey));
+  const filePath = path.join(UPLOADS_DIR, key);
 
-  // 1. Get presigned PUT URL from Forge
-  const presignUrl = new URL("v1/storage/presign/put", forgeUrl + "/");
-  presignUrl.searchParams.set("path", key);
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
 
-  const presignResp = await fetch(presignUrl, {
-    headers: { Authorization: `Bearer ${forgeKey}` },
-  });
+  const buffer =
+    typeof data === "string" ? Buffer.from(data, "utf-8") : Buffer.from(data);
 
-  if (!presignResp.ok) {
-    const msg = await presignResp.text().catch(() => presignResp.statusText);
-    throw new Error(`Storage presign failed (${presignResp.status}): ${msg}`);
-  }
+  await fs.writeFile(filePath, buffer);
 
-  const { url: s3Url } = (await presignResp.json()) as { url: string };
-  if (!s3Url) throw new Error("Forge returned empty presign URL");
-
-  // 2. PUT file directly to S3
-  const blob =
-    typeof data === "string"
-      ? new Blob([data], { type: contentType })
-      : new Blob([data as any], { type: contentType });
-
-  const uploadResp = await fetch(s3Url, {
-    method: "PUT",
-    headers: { "Content-Type": contentType },
-    body: blob,
-  });
-
-  if (!uploadResp.ok) {
-    throw new Error(`Storage upload to S3 failed (${uploadResp.status})`);
-  }
-
-  return { key, url: `/manus-storage/${key}` };
+  return { key, url: `/uploads/${key}` };
 }
 
 export async function storageGet(relKey: string): Promise<{ key: string; url: string }> {
   const key = normalizeKey(relKey);
-  return { key, url: `/manus-storage/${key}` };
+  return { key, url: `/uploads/${key}` };
 }
 
 export async function storageGetSignedUrl(relKey: string): Promise<string> {
-  const { forgeUrl, forgeKey } = getForgeConfig();
+  // No hay URLs firmadas con storage local: el archivo se sirve directo y publico.
   const key = normalizeKey(relKey);
+  return `/uploads/${key}`;
+}
 
-  const getUrl = new URL("v1/storage/presign/get", forgeUrl + "/");
-  getUrl.searchParams.set("path", key);
-
-  const resp = await fetch(getUrl, {
-    headers: { Authorization: `Bearer ${forgeKey}` },
+export async function storageDelete(relKey: string): Promise<void> {
+  const key = normalizeKey(relKey);
+  const filePath = path.join(UPLOADS_DIR, key);
+  await fs.unlink(filePath).catch(() => {
+    // Si el archivo ya no existe, no pasa nada.
   });
-
-  if (!resp.ok) {
-    const msg = await resp.text().catch(() => resp.statusText);
-    throw new Error(`Storage signed URL failed (${resp.status}): ${msg}`);
-  }
-
-  const { url } = (await resp.json()) as { url: string };
-  return url;
 }
