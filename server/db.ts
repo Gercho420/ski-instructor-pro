@@ -1,5 +1,6 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
 import {
   ContactMessage,
   contactMessages,
@@ -20,9 +21,11 @@ import {
 let _db: ReturnType<typeof drizzle> | null = null;
 
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  const dbUrl = process.env.MYSQL_URL || process.env.DATABASE_URL;
+  if (!_db && dbUrl) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      const pool = mysql.createPool(dbUrl);
+      _db = drizzle(pool);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -30,6 +33,8 @@ export async function getDb() {
   }
   return _db;
 }
+
+export { _db as db };
 
 // ===== Users / Auth =====
 
@@ -177,9 +182,11 @@ export async function getAllConfig(): Promise<SiteConfig[]> {
 export async function getConfigValue(category: string, configKey: string): Promise<string | null> {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.select().from(siteConfig).where(
-    eq(siteConfig.category, category) && eq(siteConfig.configKey, configKey)
-  ).limit(1);
+  const result = await db
+    .select()
+    .from(siteConfig)
+    .where(and(eq(siteConfig.category, category), eq(siteConfig.configKey, configKey)))
+    .limit(1);
   return result.length > 0 ? result[0].configValue : null;
 }
 
