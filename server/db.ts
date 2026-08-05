@@ -193,10 +193,8 @@ export async function getConfigValue(category: string, configKey: string): Promi
 export async function upsertConfig(category: string, configKey: string, configValue: string): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const values: InsertSiteConfig = { category, configKey, configValue };
-  const updateSet: Record<string, unknown> = { configValue };
-  await db.insert(siteConfig).values(values).onDuplicateKeyUpdate({
-    set: updateSet,
+  await db.insert(siteConfig).values({ category, configKey, configValue }).onDuplicateKeyUpdate({
+    set: { configValue },
   });
 }
 
@@ -204,10 +202,8 @@ export async function upsertConfigs(items: { category: string; configKey: string
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   for (const item of items) {
-    const values: InsertSiteConfig = { category: item.category, configKey: item.configKey, configValue: item.configValue };
-    const updateSet: Record<string, unknown> = { configValue: item.configValue };
-    await db.insert(siteConfig).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
+    await db.insert(siteConfig).values({ category: item.category, configKey: item.configKey, configValue: item.configValue }).onDuplicateKeyUpdate({
+      set: { configValue: item.configValue },
     });
   }
 }
