@@ -1,21 +1,7 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { db } from "../server/db.js";
 import { users } from "../drizzle/schema.ts";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
-import * as dotenv from "dotenv";
-
-dotenv.config();
-
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  console.error("Falta la variable de entorno DATABASE_URL");
-  process.exit(1);
-}
-
-const client = postgres(connectionString);
-const db = drizzle(client);
 
 function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString("hex");
@@ -24,6 +10,11 @@ function hashPassword(password: string): string {
 }
 
 async function createAdmin() {
+  if (!db) {
+    console.error("Error: La conexión 'db' no está disponible. Verifica tu DATABASE_URL en Railway.");
+    process.exit(1);
+  }
+
   const email = "admin@skipro.com";
   const plainPassword = "admin123";
   const hashedPassword = hashPassword(plainPassword);
@@ -49,7 +40,6 @@ async function createAdmin() {
 
   console.log(`Email: ${email}`);
   console.log(`Password: ${plainPassword}`);
-  await client.end();
   process.exit(0);
 }
 
