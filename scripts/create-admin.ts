@@ -1,31 +1,39 @@
-import { createAdminUser, getUserByEmail } from "../server/db";
-import { hashPassword } from "../server/auth";
+import { db } from "../db";
+import { users } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import bcrypt from "bcrypt";
 
-async function main() {
-  const email = process.argv[2] || "admin@skipro.com";
-  const password = process.argv[3] || "admin123";
-  const name = process.argv[4] || "Admin";
+async function createAdmin() {
+  const email = "admin@skipro.com";
+  const plainPassword = "admin123";
+  const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-  console.log(`Creando usuario administrador: ${email}...`);
+  console.log(`Verificando usuario administrador: ${email}...`);
+  
+  const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
-  try {
-    const existingUser = await getUserByEmail(email);
-    if (existingUser) {
-      console.log(`El usuario con email ${email} ya existe.`);
-      process.exit(0);
-    }
-
-    const passwordHash = await hashPassword(password);
-    await createAdminUser(email, passwordHash, name);
-
+  if (existingUser.length > 0) {
+    // Si ya existe, actualizamos su contraseña para forzar que sea admin123
+    await db.update(users)
+      .set({ password: hashedPassword, role: "admin" })
+      .where(eq(users.email, email));
+    console.log("¡Contraseña de administrador actualizada con éxito!");
+  } else {
+    await db.insert(users).values({
+      email,
+      password: hashedPassword,
+      name: "Admin",
+      role: "admin",
+    });
     console.log("¡Usuario administrador creado con éxito!");
-    console.log(`Email: ${email}`);
-    console.log(`Password: ${password}`);
-    process.exit(0);
-  } catch (error) {
-    console.error("Error al crear el usuario administrador:", error);
-    process.exit(1);
   }
+
+  console.log(`Email: ${email}`);
+  console.log(`Password: ${plainPassword}`);
+  process.exit(0);
 }
 
-main();
+createAdmin().catch((err) => {
+  console.error("Error al crear/actualizar el admin:", err);
+  process.exit(1);
+});
