@@ -1,6 +1,8 @@
 import { scryptSync, randomBytes, timingSafeEqual } from "crypto";
 import { eq } from "drizzle-orm";
 import type { Request } from "express";
+import { parse as parseCookie } from "cookie";
+import { COOKIE_NAME } from "@shared/const";
 import { getDb } from "./db";
 import { users, type User } from "../drizzle/schema";
 
@@ -44,12 +46,25 @@ export async function loginWithPassword(email: string, pass: string): Promise<Us
 }
 
 export async function authenticateRequest(req: Request): Promise<User | null> {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return null;
+  // 1) Cookie de sesión (lo que realmente setea auth.login)
+  let email: string | null = null;
+
+  const rawCookies = req.headers.cookie;
+  if (rawCookies) {
+    const cookies = parseCookie(rawCookies);
+    if (cookies[COOKIE_NAME]) {
+      email = cookies[COOKIE_NAME];
+    }
   }
 
-  const email = authHeader.split(" ")[1];
+  // 2) Fallback: header Authorization: Bearer <email>, por compatibilidad
+  if (!email) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      email = authHeader.split(" ")[1] ?? null;
+    }
+  }
+
   if (!email) return null;
 
   const db = await getDb();
