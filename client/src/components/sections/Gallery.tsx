@@ -18,8 +18,15 @@ type Photo = {
 
 export default function Gallery() {
   const { t } = useI18n();
-  const { data: photos, isLoading } = trpc.gallery.list.useQuery();
+  const { data: photosData, isLoading } = trpc.gallery.list.useQuery();
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+
+  // Blindaje para garantizar que photos siempre sea un array plano
+  const photos = Array.isArray(photosData)
+    ? photosData
+    : Array.isArray((photosData as any)?.photos)
+    ? (photosData as any).photos
+    : [];
 
   return (
     <section id="gallery" className="relative py-24 px-4 scroll-mt-20">
@@ -42,7 +49,7 @@ export default function Gallery() {
               <Skeleton key={i} className="aspect-square rounded-lg" />
             ))}
           </div>
-        ) : !photos || photos.length === 0 ? (
+        ) : photos.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-lg font-sans font-light tracking-wide text-[oklch(0.50_0.03_295)]">
               {t("gallery.empty")}
@@ -50,7 +57,7 @@ export default function Gallery() {
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {photos.map((photo, index) => (
+            {photos.map((photo: Photo, index: number) => (
               <div
                 key={photo.id}
                 className="group relative aspect-square overflow-hidden rounded-lg cursor-pointer corner-bracket"
