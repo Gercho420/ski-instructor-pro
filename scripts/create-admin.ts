@@ -1,4 +1,4 @@
-import { db } from "../db.js"; // O ajusta según la ubicación real de tu archivo db (por ejemplo "./db" o "../server/db")
+import { db } from "../server/db.js";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
