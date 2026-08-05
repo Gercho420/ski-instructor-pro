@@ -1,9 +1,22 @@
-import { db } from "../server/db.js";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import { users } from "../drizzle/schema.ts";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
+import * as dotenv from "dotenv";
 
-// Función auxiliar compatible con el sistema de hashes comunes de Node
+dotenv.config();
+
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error("Falta la variable de entorno DATABASE_URL");
+  process.exit(1);
+}
+
+const client = postgres(connectionString);
+const db = drizzle(client);
+
 function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString("hex");
   const hash = crypto.scryptSync(password, salt, 64).toString("hex");
@@ -36,6 +49,7 @@ async function createAdmin() {
 
   console.log(`Email: ${email}`);
   console.log(`Password: ${plainPassword}`);
+  await client.end();
   process.exit(0);
 }
 
