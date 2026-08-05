@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import { users } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
-import crypto from "crypto";
+import bcrypt from "bcrypt";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -17,16 +17,10 @@ if (!connectionString) {
 const connection = await mysql.createConnection(connectionString);
 const db = drizzle(connection);
 
-function hashPassword(password: string): string {
-  const salt = crypto.randomBytes(16).toString("hex");
-  const hash = crypto.scryptSync(password, salt, 64).toString("hex");
-  return `${salt}:${hash}`;
-}
-
 async function createAdmin() {
   const email = "admin@skipro.com";
   const plainPassword = "admin123";
-  const hashedPassword = hashPassword(plainPassword);
+  const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
   console.log(`Verificando usuario administrador: ${email}...`);
   
