@@ -18,17 +18,30 @@ export default function Admin() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const loginMutation = trpc.auth.login.useMutation();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const utils = trpc.useUtils();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoggingIn(true);
     try {
-      await loginMutation.mutateAsync({ email, password });
+      const res = await fetch("/api/trpc/auth.login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const json = await res.json();
+      if (!res.ok || json.error) {
+        throw new Error(json.error?.message || "Credenciales inválidas");
+      }
+
       toast.success("Sesión iniciada correctamente");
       utils.invalidate();
+      window.location.reload();
     } catch (error: any) {
       toast.error(error.message || "Email o contraseña incorrectos");
+      setIsLoggingIn(false);
     }
   };
 
@@ -43,7 +56,7 @@ export default function Admin() {
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-4 bg-[oklch(0.98_0.01_300)]">
-        <div className="w-full max-w-sm p-8 bg-white/80 backdrop-blur-md rounded-2xl border border-[oklch(0.90_0.02_300/0.5)] shadow-xl">
+        <div className="w-full max-w-sm p-8 bg-white/85 backdrop-blur-md rounded-2xl border border-[oklch(0.90_0.02_300/0.5)] shadow-xl">
           <div className="flex flex-col items-center gap-2 mb-6">
             <div className="w-12 h-12 rounded-full bg-[oklch(0.55_0.08_295/0.1)] flex items-center justify-center text-[oklch(0.55_0.08_295)]">
               <Lock className="w-6 h-6" />
@@ -87,10 +100,10 @@ export default function Admin() {
 
             <Button
               type="submit"
-              disabled={loginMutation.isPending}
+              disabled={isLoggingIn}
               className="w-full rounded-xl bg-[oklch(0.55_0.08_295)] hover:bg-[oklch(0.50_0.09_295)] text-[oklch(0.98_0.01_300)] py-2.5 mt-2 transition-all"
             >
-              {loginMutation.isPending ? (
+              {isLoggingIn ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando...
                 </>
