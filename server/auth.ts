@@ -4,9 +4,9 @@ import bcrypt from "bcryptjs";
 import { parse as parseCookieHeader } from "cookie";
 import type { Request } from "express";
 import { SignJWT, jwtVerify } from "jose";
-import type { User } from "../../drizzle/schema";
-import * as db from "../db";
-import { ENV } from "./env";
+import type { User } from "../drizzle/schema";
+import * as db from "./db";
+import { ENV } from "./_core/env";
 
 const BCRYPT_ROUNDS = 12;
 
@@ -67,8 +67,6 @@ export async function loginWithPassword(
 ): Promise<{ user: User; token: string }> {
   const user = await db.getUserByEmail(email.trim().toLowerCase());
 
-  // Constant-shape response whether the user exists or not, to avoid
-  // leaking which emails are registered via timing/response differences.
   const hash = user?.passwordHash ?? "$2a$12$invalidsaltinvalidsaltinvalidsO";
   const passwordOk = await verifyPassword(password, hash);
 
