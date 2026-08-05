@@ -1,31 +1,31 @@
-import bcrypt from "bcryptjs";
-import { db } from "../server/db";
-import { users } from "../drizzle/schema";
+import { createAdminUser, getUserByEmail } from "../server/db";
+import { hashPassword } from "../server/auth";
 
 async function main() {
-  // Toma los argumentos pasados por consola o usa valores por defecto
   const email = process.argv[2] || "admin@skipro.com";
   const password = process.argv[3] || "admin123";
+  const name = process.argv[4] || "Admin";
 
-  // Encripta la contraseña con bcrypt (12 rounds de salting)
-  const passwordHash = await bcrypt.hash(password, 12);
+  console.log(`Creando usuario administrador: ${email}...`);
 
-  // Inserta el usuario admin en la base de datos
-  await db.insert(users).values({
-    email: email.trim().toLowerCase(),
-    passwordHash,
-    name: "Admin",
-    role: "admin",
-  });
+  try {
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
+      console.log(`El usuario con email ${email} ya existe.`);
+      process.exit(0);
+    }
 
-  console.log(`\n✅ Usuario Administrador creado exitosamente!`);
-  console.log(`   Email:    ${email}`);
-  console.log(`   Password: ${password}\n`);
-  
-  process.exit(0);
+    const passwordHash = await hashPassword(password);
+    await createAdminUser(email, passwordHash, name);
+
+    console.log("¡Usuario administrador creado con éxito!");
+    console.log(`Email: ${email}`);
+    console.log(`Password: ${password}`);
+    process.exit(0);
+  } catch (error) {
+    console.error("Error al crear el usuario administrador:", error);
+    process.exit(1);
+  }
 }
 
-main().catch((err) => {
-  console.error("\n❌ Error al crear el usuario administrador:", err);
-  process.exit(1);
-});
+main();
