@@ -4,10 +4,6 @@ import { createContext } from "./context";
 import { appRouter } from "../routers";
 import { ENV } from "./env";
 import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -23,9 +19,9 @@ app.use(
   })
 );
 
-// Servir cliente en producción
+// Servir cliente estático en producción
 if (ENV.isProd) {
-  const publicPath = path.resolve(__dirname, "../public");
+  const publicPath = path.resolve(__dirname, "public");
   app.use(express.static(publicPath));
   app.get("*", (_req, res) => {
     res.sendFile(path.join(publicPath, "index.html"));
