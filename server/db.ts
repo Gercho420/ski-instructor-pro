@@ -40,8 +40,15 @@ export { _db as db };
 
 export async function getUserByEmail(email: string) {
   const db = await getDb();
-  if (!db) return undefined;
-  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  if (!db || !email) return undefined;
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, normalizedEmail))
+    .limit(1);
+
   return result[0];
 }
 
