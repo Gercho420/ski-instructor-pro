@@ -82,7 +82,7 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
   const db = await getDb();
   if (!db) return [];
   const result = await db.select().from(galleryPhotos).orderBy(desc(galleryPhotos.sortOrder), desc(galleryPhotos.createdAt));
-  return result;
+  return result ?? [];
 }
 
 export async function createGalleryPhoto(data: InsertGalleryPhoto): Promise<GalleryPhoto> {
@@ -111,14 +111,14 @@ export async function getApprovedReviews(): Promise<Review[]> {
   const db = await getDb();
   if (!db) return [];
   const result = await db.select().from(reviews).where(eq(reviews.approved, "approved")).orderBy(desc(reviews.createdAt));
-  return result;
+  return result ?? [];
 }
 
 export async function getAllReviews(): Promise<Review[]> {
   const db = await getDb();
   if (!db) return [];
   const result = await db.select().from(reviews).orderBy(desc(reviews.createdAt));
-  return result;
+  return result ?? [];
 }
 
 export async function createReview(data: InsertReview): Promise<Review> {
@@ -155,7 +155,7 @@ export async function getAllContactMessages(): Promise<ContactMessage[]> {
   const db = await getDb();
   if (!db) return [];
   const result = await db.select().from(contactMessages).orderBy(desc(contactMessages.createdAt));
-  return result;
+  return result ?? [];
 }
 
 export async function markContactMessageRead(id: number): Promise<void> {
@@ -176,14 +176,14 @@ export async function getConfigByCategory(category: string): Promise<SiteConfig[
   const db = await getDb();
   if (!db) return [];
   const result = await db.select().from(siteConfig).where(eq(siteConfig.category, category));
-  return result;
+  return result ?? [];
 }
 
 export async function getAllConfig(): Promise<SiteConfig[]> {
   const db = await getDb();
   if (!db) return [];
   const result = await db.select().from(siteConfig).orderBy(siteConfig.category);
-  return result;
+  return result ?? [];
 }
 
 export async function getConfigValue(category: string, configKey: string): Promise<string | null> {
