@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import { users } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
-import bcrypt from "bcrypt";
+import { scryptSync, randomBytes } from "crypto";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -17,10 +17,17 @@ if (!connectionString) {
 const connection = await mysql.createConnection(connectionString);
 const db = drizzle(connection);
 
+// Debe coincidir EXACTAMENTE con hashPassword() en server/auth.ts
+function hashPassword(password: string): string {
+  const salt = randomBytes(16).toString("hex");
+  const hashedPassword = scryptSync(password, salt, 64).toString("hex");
+  return `${salt}:${hashedPassword}`;
+}
+
 async function createAdmin() {
   const email = "admin@skipro.com";
   const plainPassword = "admin123";
-  const hashedPassword = await bcrypt.hash(plainPassword, 10);
+  const hashedPassword = hashPassword(plainPassword);
 
   console.log(`Verificando usuario administrador: ${email}...`);
   
@@ -28,13 +35,13 @@ async function createAdmin() {
 
   if (existingUser.length > 0) {
     await db.update(users)
-      .set({ password: hashedPassword, role: "admin" })
+      .set({ passwordHash: hashedPassword, role: "admin" })
       .where(eq(users.email, email));
     console.log("¡Contraseña de administrador actualizada con éxito!");
   } else {
     await db.insert(users).values({
       email,
-      password: hashedPassword,
+      passwordHash: hashedPassword,
       name: "Admin",
       role: "admin",
     });
