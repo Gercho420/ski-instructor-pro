@@ -18,6 +18,11 @@ app.use(
   })
 );
 
+// Servir archivos subidos (fotos de la galería). Requiere un Volume de Railway
+// montado en UPLOADS_DIR para que las fotos no se pierdan en cada redeploy.
+const uploadsDir = process.env.UPLOADS_DIR || path.resolve(process.cwd(), "uploads");
+app.use("/uploads", express.static(uploadsDir));
+
 // Servir frontend en producción
 const publicPath = path.resolve(__dirname, "public");
 app.use(express.static(publicPath));
