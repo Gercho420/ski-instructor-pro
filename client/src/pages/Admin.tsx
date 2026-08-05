@@ -311,13 +311,58 @@ function GalleryAdmin() {
 
 // ===== Reviews Admin =====
 function ReviewsAdmin({ lang, t }: { lang: string; t: (key: string) => string }) {
-  const { data: reviewsData, isLoading } = trpc.reviews.listApproved.useQuery();
+  const { data: reviewsData, isLoading, error } = trpc.reviews.listAll.useQuery();
   const reviews = Array.isArray(reviewsData) ? reviewsData : [];
 
   const approveMutation = trpc.reviews.approve.useMutation();
+  const rejectMutation = trpc.reviews.reject.useMutation();
+  const deleteMutation = trpc.reviews.delete.useMutation();
   const utils = trpc.useUtils();
 
+  const handleApprove = async (id: number) => {
+    try {
+      await approveMutation.mutateAsync({ id });
+      utils.reviews.listAll.invalidate();
+      utils.reviews.listApproved.invalidate();
+      toast.success("Reseña aprobada");
+    } catch (err: any) {
+      toast.error(err?.message || "Error al aprobar");
+    }
+  };
+
+  const handleReject = async (id: number) => {
+    try {
+      await rejectMutation.mutateAsync({ id });
+      utils.reviews.listAll.invalidate();
+      utils.reviews.listApproved.invalidate();
+      toast.success("Reseña rechazada");
+    } catch (err: any) {
+      toast.error(err?.message || "Error al rechazar");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("¿Borrar esta reseña?")) return;
+    try {
+      await deleteMutation.mutateAsync({ id });
+      utils.reviews.listAll.invalidate();
+      utils.reviews.listApproved.invalidate();
+      toast.success("Reseña borrada");
+    } catch (err: any) {
+      toast.error(err?.message || "Error al borrar");
+    }
+  };
+
   if (isLoading) return <Skeleton className="h-40 rounded-lg" />;
+
+  if (error) {
+    return (
+      <p className="text-center text-sm font-sans text-red-500 py-12">
+        Error al cargar reseñas: {error.message}
+      </p>
+    );
+  }
+
   if (reviews.length === 0)
     return <p className="text-center text-sm font-sans font-light text-[oklch(0.50_0.03_295)] py-12">{t("admin.noReviews")}</p>;
 
@@ -332,11 +377,33 @@ function ReviewsAdmin({ lang, t }: { lang: string; t: (key: string) => string })
               </div>
               <div>
                 <p className="font-sans text-sm font-medium text-[oklch(0.35_0.05_295)]">{review.authorName}</p>
+                <span className={`text-[10px] uppercase tracking-wider font-sans px-2 py-0.5 rounded-full ${
+                  review.approved === "approved" ? "bg-green-100 text-green-700" :
+                  review.approved === "rejected" ? "bg-red-100 text-red-700" :
+                  "bg-yellow-100 text-yellow-700"
+                }`}>
+                  {review.approved === "approved" ? "Aprobada" : review.approved === "rejected" ? "Rechazada" : "Pendiente"}
+                </span>
               </div>
             </div>
             <StarRating rating={review.rating} size={14} />
           </div>
           <p className="text-sm font-sans font-light text-[oklch(0.45_0.04_295)] italic mb-4">"{review.comment}"</p>
+          <div className="flex gap-2">
+            {review.approved !== "approved" && (
+              <Button size="sm" onClick={() => handleApprove(review.id)} className="rounded-full bg-green-600 hover:bg-green-700 text-white text-xs">
+                Aprobar
+              </Button>
+            )}
+            {review.approved !== "rejected" && (
+              <Button size="sm" variant="outline" onClick={() => handleReject(review.id)} className="rounded-full text-xs">
+                Rechazar
+              </Button>
+            )}
+            <Button size="sm" variant="destructive" onClick={() => handleDelete(review.id)} className="rounded-full text-xs">
+              <Trash2 className="w-3 h-3 mr-1" />Borrar
+            </Button>
+          </div>
         </div>
       ))}
     </div>
@@ -373,10 +440,115 @@ function MessagesAdmin({ lang, t }: { lang: string; t: (key: string) => string }
 }
 
 // ===== Settings Admin =====
+const CONFIG_CATEGORIES = [
+  { value: "contact", label: "Contacto" },
+  { value: "services", label: "Servicios" },
+  { value: "texts_es", label: "Textos (Español)" },
+  { value: "texts_en", label: "Textos (Inglés)" },
+  { value: "texts_pt", label: "Textos (Portugués)" },
+];
+
 function SettingsAdmin({ lang, t }: { lang: string; t: (key: string) => string }) {
+  const [category, setCategory] = useState(CONFIG_CATEGORIES[0].value);
+  const { data: configData, isLoading, error } = trpc.config.getByCategory.useQuery({ category });
+  const saveMutation = trpc.config.save.useMutation();
+  const utils = trpc.useUtils();
+
+  const [items, setItems] = useState<{ configKey: string; configValue: string }[]>([]);
+  const [loadedCategory, setLoadedCategory] = useState<string | null>(null);
+
+  if (Array.isArray(configData) && loadedCategory !== category) {
+    setItems(configData.map((c: any) => ({ configKey: c.configKey, configValue: c.configValue })));
+    setLoadedCategory(category);
+  }
+
+  const updateItem = (index: number, field: "configKey" | "configValue", value: string) => {
+    setItems((prev) => prev.map((it, i) => (i === index ? { ...it, [field]: value } : it)));
+  };
+
+  const removeItem = (index: number) => {
+    setItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const addItem = () => {
+    setItems((prev) => [...prev, { configKey: "", configValue: "" }]);
+  };
+
+  const handleSave = async () => {
+    const cleanItems = items
+      .map((it) => ({ configKey: it.configKey.trim(), configValue: it.configValue }))
+      .filter((it) => it.configKey.length > 0);
+
+    try {
+      await saveMutation.mutateAsync({ category, items: cleanItems });
+      toast.success("Configuración guardada");
+      utils.config.getByCategory.invalidate({ category });
+    } catch (err: any) {
+      toast.error(err?.message || "Error al guardar la configuración");
+    }
+  };
+
   return (
-    <div className="p-6 bg-white/50 rounded-lg border text-sm text-gray-500">
-      Configuraciones generales de la plataforma.
+    <div className="space-y-6">
+      <div className="flex flex-wrap gap-2">
+        {CONFIG_CATEGORIES.map((c) => (
+          <Button
+            key={c.value}
+            size="sm"
+            variant={category === c.value ? "default" : "ghost"}
+            onClick={() => setCategory(c.value)}
+            className={`rounded-full text-xs ${category === c.value ? "bg-[oklch(0.55_0.08_295)] text-white" : "border border-[oklch(0.70_0.04_295/0.3)]"}`}
+          >
+            {c.label}
+          </Button>
+        ))}
+      </div>
+
+      {isLoading ? (
+        <Skeleton className="h-40 rounded-lg" />
+      ) : error ? (
+        <p className="text-sm text-red-500">Error al cargar configuración: {error.message}</p>
+      ) : (
+        <div className="corner-bracket p-6 bg-[oklch(0.97_0.012_300/0.5)] backdrop-blur-sm rounded-lg border border-[oklch(0.90_0.02_300/0.3)] space-y-4">
+          {items.length === 0 && (
+            <p className="text-sm text-[oklch(0.50_0.03_295)]">No hay valores todavía para esta categoría. Agregá uno abajo.</p>
+          )}
+
+          {items.map((item, i) => (
+            <div key={i} className="grid sm:grid-cols-[1fr_2fr_auto] gap-3 items-start">
+              <Input
+                placeholder="clave (ej: phone)"
+                value={item.configKey}
+                onChange={(e) => updateItem(i, "configKey", e.target.value)}
+                className="rounded-lg bg-white border-[oklch(0.90_0.02_300)]"
+              />
+              <Textarea
+                placeholder="valor"
+                value={item.configValue}
+                onChange={(e) => updateItem(i, "configValue", e.target.value)}
+                rows={1}
+                className="rounded-lg bg-white border-[oklch(0.90_0.02_300)] resize-y"
+              />
+              <Button variant="ghost" size="sm" onClick={() => removeItem(i)} className="rounded-full text-red-500">
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
+
+          <div className="flex gap-3 pt-2">
+            <Button variant="outline" onClick={addItem} className="rounded-full text-sm">
+              + Agregar campo
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={saveMutation.isPending}
+              className="rounded-full bg-[oklch(0.55_0.08_295)] hover:bg-[oklch(0.50_0.09_295)] text-white text-sm"
+            >
+              {saveMutation.isPending ? "Guardando..." : "Guardar cambios"}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
