@@ -1,5 +1,5 @@
 import { db } from "../server/db.js";
-import { users } from "@shared/schema";
+import { users } from "../shared/schema.js"; // <-- Cambiado a ruta relativa
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
