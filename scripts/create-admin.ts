@@ -1,12 +1,19 @@
 import { db } from "../server/db.js";
-import { users } from "../drizzle/schema.ts"; // <-- Ruta corregida a la carpeta drizzle
+import { users } from "../drizzle/schema.ts";
 import { eq } from "drizzle-orm";
-import bcrypt from "bcrypt";
+import crypto from "crypto";
+
+// Función auxiliar compatible con el sistema de hashes comunes de Node
+function hashPassword(password: string): string {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const hash = crypto.scryptSync(password, salt, 64).toString("hex");
+  return `${salt}:${hash}`;
+}
 
 async function createAdmin() {
   const email = "admin@skipro.com";
   const plainPassword = "admin123";
-  const hashedPassword = await bcrypt.hash(plainPassword, 10);
+  const hashedPassword = hashPassword(plainPassword);
 
   console.log(`Verificando usuario administrador: ${email}...`);
   
