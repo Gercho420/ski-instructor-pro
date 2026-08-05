@@ -1,4 +1,4 @@
-import { db } from "../db";
+import { db } from "../db.js"; // O ajusta según la ubicación real de tu archivo db (por ejemplo "./db" o "../server/db")
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
@@ -13,7 +13,6 @@ async function createAdmin() {
   const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
   if (existingUser.length > 0) {
-    // Si ya existe, actualizamos su contraseña para forzar que sea admin123
     await db.update(users)
       .set({ password: hashedPassword, role: "admin" })
       .where(eq(users.email, email));
