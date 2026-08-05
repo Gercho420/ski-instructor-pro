@@ -43,7 +43,7 @@ export default function Hero() {
       {/* Background image */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/manus-storage/hero-ski_c1cd739e.jpg"
+          src="/hero-ski_c1cd739e.jpg"
           alt="Instructor de ski profesional en la montaña, clases personalizadas de ski en Argentina"
           className="w-full h-full object-cover opacity-30"
         />
