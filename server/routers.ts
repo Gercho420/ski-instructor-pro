@@ -94,6 +94,11 @@ export const reviewsRouter = router({
     return Array.isArray(reviews) ? reviews : [];
   }),
 
+  listAll: adminProcedure.query(async () => {
+    const reviews = await db.getAllReviews();
+    return Array.isArray(reviews) ? reviews : [];
+  }),
+
   create: publicProcedure
     .input(
       z.object({
@@ -116,6 +121,20 @@ export const reviewsRouter = router({
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       await db.updateReviewStatus(input.id, "approved");
+      return { success: true };
+    }),
+
+  reject: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      await db.updateReviewStatus(input.id, "rejected");
+      return { success: true };
+    }),
+
+  delete: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      await db.deleteReview(input.id);
       return { success: true };
     }),
 });
@@ -166,7 +185,12 @@ export const configRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      await db.upsertConfigs(input.category, input.items);
+      const itemsWithCategory = input.items.map((item) => ({
+        category: input.category,
+        configKey: item.configKey,
+        configValue: item.configValue,
+      }));
+      await db.upsertConfigs(itemsWithCategory);
       return { success: true };
     }),
 });
