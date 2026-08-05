@@ -20,7 +20,6 @@ export function comparePassword(password: string, storedHash: string): boolean {
     const keyBuffer = Buffer.from(key, "hex");
     const derivedKey = scryptSync(password, salt, 64);
 
-    // Evita el crash si las longitudes de los Buffers no coinciden exactas
     if (keyBuffer.length !== derivedKey.length) {
       return false;
     }
@@ -33,7 +32,7 @@ export function comparePassword(password: string, storedHash: string): boolean {
 
 export async function loginWithPassword(email: string, pass: string): Promise<User | null> {
   const db = await getDb();
-  if (!db) return null;
+  if (!db || !email) return null;
 
   const normalizedEmail = email.trim().toLowerCase();
   const [user] = await db.select().from(users).where(eq(users.email, normalizedEmail)).limit(1);
