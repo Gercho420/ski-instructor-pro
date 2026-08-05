@@ -7,8 +7,15 @@ export default function About() {
   const { data: textsConfig } = trpc.config.getByCategory.useQuery({ category: `texts_${lang}` });
 
   const aboutText = useMemo(() => {
-    if (!textsConfig) return t("about.text");
-    const entry = textsConfig.find(c => c.configKey === "about_text");
+    // Blindaje estricto: aseguramos que textsConfig sea un array antes de usar .find()
+    const configArray = Array.isArray(textsConfig)
+      ? textsConfig
+      : Array.isArray((textsConfig as any)?.items)
+      ? (textsConfig as any).items
+      : [];
+
+    if (configArray.length === 0) return t("about.text");
+    const entry = configArray.find((c: any) => c.configKey === "about_text");
     return entry?.configValue || t("about.text");
   }, [textsConfig, t, lang]);
 
