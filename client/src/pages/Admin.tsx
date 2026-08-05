@@ -21,26 +21,19 @@ export default function Admin() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const utils = trpc.useUtils();
 
+  const loginMutation = trpc.auth.login.useMutation();
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
     try {
-      const res = await fetch("/api/trpc/auth.login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      
-      const json = await res.json();
-      if (!res.ok || json.error) {
-        throw new Error(json.error?.message || "Credenciales inválidas");
-      }
+      await loginMutation.mutateAsync({ email, password });
 
       toast.success("Sesión iniciada correctamente");
       utils.invalidate();
       window.location.reload();
     } catch (error: any) {
-      toast.error(error.message || "Email o contraseña incorrectos");
+      toast.error(error?.message || "Email o contraseña incorrectos");
       setIsLoggingIn(false);
     }
   };
