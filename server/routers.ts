@@ -5,6 +5,7 @@ import { loginWithPassword } from "./auth";
 import * as db from "./db";
 import * as storage from "./storage";
 import { notifyOwner } from "./_core/notification";
+import { optimizeImageForWeb } from "./imageProcessing";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 
@@ -66,11 +67,21 @@ export const galleryRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const buffer = Buffer.from(input.fileBase64, "base64");
+      const rawBuffer = Buffer.from(input.fileBase64, "base64");
+
+      // Redimensiona a un máximo web-friendly y convierte a WebP antes de guardar,
+      // para no servir fotos de celular de varios MB tal cual las suba el admin.
+      const optimized = await optimizeImageForWeb(rawBuffer, input.contentType);
+
+      const fileNameBase = optimized.extension
+        ? input.fileName.replace(/\.[^./]+$/, "")
+        : input.fileName;
+      const fileName = optimized.extension ? `${fileNameBase}.${optimized.extension}` : input.fileName;
+
       const { key, url } = await storage.storagePut(
-        `gallery/${Date.now()}-${input.fileName}`,
-        buffer,
-        input.contentType
+        `gallery/${Date.now()}-${fileName}`,
+        optimized.buffer,
+        optimized.contentType
       );
       return db.createGalleryPhoto({
         title: input.title || input.fileName,
