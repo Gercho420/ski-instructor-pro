@@ -1,24 +1,25 @@
 import { useI18n } from "@/i18n/I18nContext";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
-
-type ServiceItem = {
-  id?: string | number;
-  title?: string;
-  description?: string;
-  price?: string;
-  features?: string[];
-};
+import { SERVICE_DEFS } from "@shared/const";
 
 export default function Services() {
   const { t } = useI18n();
   const { data: servicesData, isLoading } = trpc.config.getByCategory.useQuery({ category: "services" });
 
-  const services = Array.isArray(servicesData)
-    ? servicesData
-    : Array.isArray((servicesData as any)?.items)
-    ? (servicesData as any).items
-    : [];
+  const configMap: Record<string, string> = {};
+  if (Array.isArray(servicesData)) {
+    servicesData.forEach((c: any) => {
+      configMap[c.configKey] = c.configValue;
+    });
+  }
+
+  const services = SERVICE_DEFS.map((s) => ({
+    id: s.key,
+    title: configMap[`service_${s.key}_title`] || s.defaultTitle,
+    description: configMap[`service_${s.key}_desc`] || s.defaultDesc,
+    price: configMap[`service_${s.key}_price`] || "",
+  }));
 
   return (
     <section id="services" className="relative py-24 px-4 scroll-mt-20">
@@ -41,43 +42,11 @@ export default function Services() {
               <Skeleton key={i} className="h-64 rounded-lg" />
             ))}
           </div>
-        ) : services.length === 0 ? (
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="corner-bracket p-8 bg-[oklch(0.97_0.012_300/0.5)] backdrop-blur-sm rounded-lg border border-[oklch(0.90_0.02_300/0.3)] flex flex-col justify-between">
-              <div>
-                <h3 className="font-serif text-2xl text-[oklch(0.30_0.05_295)] mb-3">Clases Particulares</h3>
-                <p className="text-sm font-sans font-light text-[oklch(0.45_0.04_295)] leading-relaxed mb-6">
-                  Instrucción personalizada adaptada a tu nivel, desde principiantes hasta avanzados perfeccionando técnica en pista y fuera de pista.
-                </p>
-              </div>
-              <span className="text-xs font-sans tracking-wider uppercase text-[oklch(0.55_0.08_295)] font-medium">Personalizado</span>
-            </div>
-
-            <div className="corner-bracket p-8 bg-[oklch(0.97_0.012_300/0.5)] backdrop-blur-sm rounded-lg border border-[oklch(0.90_0.02_300/0.3)] flex flex-col justify-between">
-              <div>
-                <h3 className="font-serif text-2xl text-[oklch(0.30_0.05_295)] mb-3">Clínicas en Grupo</h3>
-                <p className="text-sm font-sans font-light text-[oklch(0.45_0.04_295)] leading-relaxed mb-6">
-                  Mejora tu confianza y estilo compartiendo la experiencia en grupos reducidos con objetivos dinámicos y divertidos.
-                </p>
-              </div>
-              <span className="text-xs font-sans tracking-wider uppercase text-[oklch(0.55_0.08_295)] font-medium">Divertido</span>
-            </div>
-
-            <div className="corner-bracket p-8 bg-[oklch(0.97_0.012_300/0.5)] backdrop-blur-sm rounded-lg border border-[oklch(0.90_0.02_300/0.3)] flex flex-col justify-between">
-              <div>
-                <h3 className="font-serif text-2xl text-[oklch(0.30_0.05_295)] mb-3">Guía Off-Piste</h3>
-                <p className="text-sm font-sans font-light text-[oklch(0.45_0.04_295)] leading-relaxed mb-6">
-                  Descubre los mejores rincones de nieve virgen priorizando la seguridad, lectura del terreno y técnica en powder.
-                </p>
-              </div>
-              <span className="text-xs font-sans tracking-wider uppercase text-[oklch(0.55_0.08_295)] font-medium">Aventura</span>
-            </div>
-          </div>
         ) : (
           <div className="grid md:grid-cols-3 gap-6">
-            {services.map((service: ServiceItem, index: number) => (
+            {services.map((service) => (
               <div
-                key={service.id || index}
+                key={service.id}
                 className="corner-bracket p-8 bg-[oklch(0.97_0.012_300/0.5)] backdrop-blur-sm rounded-lg border border-[oklch(0.90_0.02_300/0.3)] flex flex-col justify-between"
               >
                 <div>
