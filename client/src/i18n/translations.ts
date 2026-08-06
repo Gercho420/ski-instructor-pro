@@ -64,6 +64,7 @@ export const translations: Record<Lang, TranslationDict> = {
     "gallery.title": "Galería de Clases",
     "gallery.subtitle": "Momentos capturados en la montaña",
     "gallery.empty": "Aún no hay fotos en la galería. ¡Pronto habrá contenido!",
+    "gallery.altFallback": "Foto de clase de ski con SkiPro",
 
     // Reviews
     "reviews.title": "Reseñas de Estudiantes",
@@ -221,6 +222,7 @@ export const translations: Record<Lang, TranslationDict> = {
     "gallery.title": "Class Gallery",
     "gallery.subtitle": "Moments captured on the mountain",
     "gallery.empty": "No photos yet. Content coming soon!",
+    "gallery.altFallback": "Ski lesson photo with SkiPro",
 
     // Reviews
     "reviews.title": "Student Reviews",
@@ -378,6 +380,7 @@ export const translations: Record<Lang, TranslationDict> = {
     "gallery.title": "Galeria de Aulas",
     "gallery.subtitle": "Momentos capturados na montanha",
     "gallery.empty": "Ainda não há fotos na galeria. Em breve teremos conteúdo!",
+    "gallery.altFallback": "Foto de aula de esqui com SkiPro",
 
     // Reviews
     "reviews.title": "Avaliações de Alunos",
