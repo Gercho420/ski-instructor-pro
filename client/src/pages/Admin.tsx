@@ -117,7 +117,7 @@ export default function Admin() {
         <h1 className="font-serif text-3xl text-[oklch(0.30_0.05_295)]">403</h1>
         <p className="text-sm font-sans font-light text-[oklch(0.50_0.03_295)]">Access denied</p>
         <Button asChild variant="ghost" className="rounded-full border border-[oklch(0.70_0.04_295/0.3)]">
-          <a href="/">{t("admin.backToSite")}</a>
+          <a href={`/${lang}/`}>{t("admin.backToSite")}</a>
         </Button>
       </div>
     );
@@ -134,7 +134,7 @@ export default function Admin() {
             </p>
           </div>
           <Button asChild variant="ghost" className="rounded-full border border-[oklch(0.70_0.04_295/0.3)] text-sm">
-            <a href="/"><ArrowLeft className="w-4 h-4 mr-2" />{t("admin.backToSite")}</a>
+            <a href={`/${lang}/`}><ArrowLeft className="w-4 h-4 mr-2" />{t("admin.backToSite")}</a>
           </Button>
         </div>
 
