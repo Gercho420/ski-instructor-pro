@@ -18,8 +18,9 @@ export default function Navbar() {
 
   const waNumber = useMemo(() => {
     if (!contactConfig) return "34600000000";
-    const entry = contactConfig.find(c => c.configKey === "whatsapp");
-    const number = entry?.configValue || "+34 600 000 000";
+    const map: Record<string, string> = {};
+    contactConfig.forEach(c => { map[c.configKey] = c.configValue; });
+    const number = map.whatsapp || "+34 600 000 000";
     return number.replace(/[^0-9]/g, "");
   }, [contactConfig]);
   const [scrolled, setScrolled] = useState(false);
