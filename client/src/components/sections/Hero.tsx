@@ -10,18 +10,22 @@ export default function Hero() {
   const { data: textsConfig } = trpc.config.getByCategory.useQuery({ category: `texts_${lang}` });
   const { data: contactConfig } = trpc.config.getByCategory.useQuery({ category: "contact" });
 
-  const waNumber = useMemo(() => {
-    if (!contactConfig) return "34600000000";
-    const entry = contactConfig.find(c => c.configKey === "whatsapp");
-    const number = entry?.configValue || "+34 600 000 000";
-    return number.replace(/[^0-9]/g, "");
+  const contactValues = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (contactConfig) {
+      contactConfig.forEach(c => { map[c.configKey] = c.configValue; });
+    }
+    return map;
   }, [contactConfig]);
 
+  const waNumber = useMemo(() => {
+    const number = contactValues.whatsapp || "+34 600 000 000";
+    return number.replace(/[^0-9]/g, "");
+  }, [contactValues]);
+
   const mountainStatusUrl = useMemo(() => {
-    if (!contactConfig) return "";
-    const entry = contactConfig.find(c => c.configKey === "mountain_status_url");
-    return entry?.configValue || "";
-  }, [contactConfig]);
+    return contactValues.mountain_status_url || "";
+  }, [contactValues]);
 
   const heroTexts = useMemo(() => {
     if (!textsConfig) return {
