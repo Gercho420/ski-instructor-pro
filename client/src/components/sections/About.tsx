@@ -7,7 +7,7 @@ export default function About() {
   const { data: textsConfig } = trpc.config.getByCategory.useQuery({ category: `texts_${lang}` });
 
   const aboutText = useMemo(() => {
-    // Blindaje estricto: aseguramos que textsConfig sea un array antes de usar .find()
+    // Blindaje estricto: aseguramos que textsConfig sea un array antes de usarlo
     const configArray = Array.isArray(textsConfig)
       ? textsConfig
       : Array.isArray((textsConfig as any)?.items)
@@ -15,8 +15,9 @@ export default function About() {
       : [];
 
     if (configArray.length === 0) return t("about.text");
-    const entry = configArray.find((c: any) => c.configKey === "about_text");
-    return entry?.configValue || t("about.text");
+    const map: Record<string, string> = {};
+    configArray.forEach((c: any) => { map[c.configKey] = c.configValue; });
+    return map.about_text || t("about.text");
   }, [textsConfig, t, lang]);
 
   return (
