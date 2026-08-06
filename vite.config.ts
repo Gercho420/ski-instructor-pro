@@ -167,6 +167,7 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    sourcemap: true, // Habilita la generación automática de mapas de origen (Source Maps)
   },
   server: {
     host: true,
