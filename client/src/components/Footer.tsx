@@ -11,8 +11,9 @@ export default function Footer() {
 
   const footerTagline = useMemo(() => {
     if (!textsConfig) return t("footer.tagline");
-    const entry = textsConfig.find(c => c.configKey === "footer_tagline");
-    return entry?.configValue || t("footer.tagline");
+    const map: Record<string, string> = {};
+    textsConfig.forEach(c => { map[c.configKey] = c.configValue; });
+    return map.footer_tagline || t("footer.tagline");
   }, [textsConfig, t, lang]);
 
   if (location === "/admin") return null;
