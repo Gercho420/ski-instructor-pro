@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Evitar que los buscadores indexen el panel de administración
+Disallow: /admin
+
+# Enlazar el mapa del sitio
+Sitemap: https://skipro.com/sitemap.xml
