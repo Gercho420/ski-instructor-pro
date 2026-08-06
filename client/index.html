@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SkiPro | Clases de Ski Profesionales —  Instructor de Esquí Profesional en Bariloche y Andorra</title>
-    <meta name="description" content="Instructor de ski certificado con más de 15 años de experiencia. Clases personalizadas para todos los niveles: principiantes, intermedios, avanzados, privadas y grupales. Reserva tu clase en Argentina." />
+    <title>SkiPro | Clases de Ski y Snowboard en Bariloche y Andorra</title>
+    <meta name="description" content="Instructor de ski certificado con más de 15 años de experiencia en Bariloche y Andorra. Clases privadas y grupales para todos los niveles. Reservá por WhatsApp." />
     <meta name="robots" content="index, follow" />
     <meta name="author" content="SkiPro" />
-    <meta name="keywords" content="ski instructor, clases de ski, ski lessons, aulas de ski, profesor de ski, ski Argentina, ski classes, ski instructor Argentina" />
-    <meta name="canonical" content="/" />
+    <meta name="keywords" content="ski instructor, clases de ski, ski lessons, aulas de ski, profesor de ski, ski Bariloche, ski Andorra, clases de snowboard, ski instructor Argentina" />
+    <link rel="canonical" href="%VITE_SITE_URL%/" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="/" />
-    <meta property="og:title" content="SkiPro | Clases de Ski Profesionales" />
-    <meta property="og:description" content="Instructor de ski certificado con más de 15 años de experiencia. Clases personalizadas para todos los niveles. Reserva tu clase hoy." />
-    <meta property="og:image" content="/manus-storage/hero-ski_c1cd739e.jpg" />
+    <meta property="og:url" content="%VITE_SITE_URL%/" />
+    <meta property="og:title" content="SkiPro | Clases de Ski y Snowboard en Bariloche y Andorra" />
+    <meta property="og:description" content="Instructor de ski certificado con más de 15 años de experiencia en Bariloche y Andorra. Clases privadas y grupales para todos los niveles." />
+    <meta property="og:image" content="%VITE_SITE_URL%/hero-ski_c1cd739e.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="es_AR" />
@@ -25,14 +25,66 @@
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="/" />
-    <meta name="twitter:title" content="SkiPro | Clases de Ski Profesionales" />
-    <meta name="twitter:description" content="Instructor de ski certificado con más de 15 años de experiencia. Clases personalizadas para todos los niveles." />
-    <meta name="twitter:image" content="/manus-storage/hero-ski_c1cd739e.jpg" />
+    <meta name="twitter:url" content="%VITE_SITE_URL%/" />
+    <meta name="twitter:title" content="SkiPro | Clases de Ski y Snowboard en Bariloche y Andorra" />
+    <meta name="twitter:description" content="Instructor de ski certificado con más de 15 años de experiencia en Bariloche y Andorra. Clases privadas y grupales para todos los niveles." />
+    <meta name="twitter:image" content="%VITE_SITE_URL%/hero-ski_c1cd739e.jpg" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet" />
+
+    <!--
+      Schema.org: usamos "Service" en vez de "LocalBusiness" porque el negocio
+      no tiene local físico (clases in situ en pista, dos zonas de servicio).
+      Los valores de contacto (whatsapp/instagram) son los defaults actuales
+      del panel admin (categoría "contact"); si se cambian ahí, actualizar
+      también acá a mano hasta que se generen dinámicamente.
+    -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "serviceType": "Clases de Ski y Snowboard",
+      "name": "SkiPro | Clases de Ski Profesionales",
+      "description": "Clases de ski y snowboard para todos los niveles: principiantes, intermedio, avanzado, privadas, grupales y para niños.",
+      "provider": {
+        "@type": "Organization",
+        "name": "SkiPro",
+        "sameAs": ["https://instagram.com/skipro"]
+      },
+      "areaServed": [
+        {
+          "@type": "City",
+          "name": "San Carlos de Bariloche",
+          "containedInPlace": { "@type": "Country", "name": "Argentina" }
+        },
+        {
+          "@type": "AdministrativeArea",
+          "name": "Andorra",
+          "containedInPlace": { "@type": "Country", "name": "Andorra" }
+        }
+      ],
+      "availableChannel": {
+        "@type": "ServiceChannel",
+        "servicePhone": "+34 600 000 000",
+        "availableLanguage": ["es", "en", "pt"]
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Clases de Ski",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Clases para Principiantes" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Clases Nivel Intermedio" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Clases Nivel Avanzado" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Clases Privadas" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Clases Grupales" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Clases para Niños" } }
+        ]
+      },
+      "url": "%VITE_SITE_URL%/"
+    }
+    </script>
 </head>
 <body>
     <div id="root"></div>
