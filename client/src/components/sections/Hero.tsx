@@ -47,8 +47,13 @@ export default function Hero() {
       {/* Background image */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/hero-ski_c1cd739e.jpg"
-          alt="Instructor de ski profesional en la montaña, clases personalizadas de ski en Argentina"
+          src="/hero-ski_c1cd739e.webp"
+          alt=""
+          role="presentation"
+          width={1920}
+          height={1080}
+          fetchPriority="high"
+          decoding="async"
           className="w-full h-full object-cover object-[38%_center] md:object-center opacity-30"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[oklch(0.98_0.015_300/0.5)] via-[oklch(0.98_0.015_300/0.3)] to-[oklch(0.98_0.015_300/0.8)]" />
