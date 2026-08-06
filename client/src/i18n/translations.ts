@@ -18,6 +18,15 @@ type TranslationDict = Record<string, string>;
 
 export const translations: Record<Lang, TranslationDict> = {
   es: {
+    // SEO
+    "seo.title": "Clases de Ski y Snowboard en Bariloche y Andorra | SkiPro",
+    "seo.description": "Instructor de ski certificado con más de 15 años de experiencia en Bariloche y Andorra. Clases privadas y grupales para todos los niveles. Reservá por WhatsApp.",
+
+    // 404
+    "notFound.title": "Página no encontrada",
+    "notFound.message": "Lo sentimos, la página que buscás no existe. Puede que haya sido movida o eliminada.",
+    "notFound.cta": "Ir al inicio",
+
     // Nav
     "nav.home": "Inicio",
     "nav.services": "Servicios",
@@ -176,6 +185,15 @@ export const translations: Record<Lang, TranslationDict> = {
   },
 
   en: {
+    // SEO
+    "seo.title": "Ski & Snowboard Lessons in Bariloche and Andorra | SkiPro",
+    "seo.description": "Certified ski instructor with 15+ years of experience in Bariloche and Andorra. Private and group lessons for all levels. Book your class via WhatsApp.",
+
+    // 404
+    "notFound.title": "Page Not Found",
+    "notFound.message": "Sorry, the page you're looking for doesn't exist. It may have been moved or deleted.",
+    "notFound.cta": "Go Home",
+
     // Nav
     "nav.home": "Home",
     "nav.services": "Services",
@@ -334,6 +352,15 @@ export const translations: Record<Lang, TranslationDict> = {
   },
 
   pt: {
+    // SEO
+    "seo.title": "Aulas de Esqui e Snowboard em Bariloche e Andorra | SkiPro",
+    "seo.description": "Instrutor de esqui certificado com mais de 15 anos de experiência em Bariloche e Andorra. Aulas privadas e em grupo para todos os níveis. Reserve pelo WhatsApp.",
+
+    // 404
+    "notFound.title": "Página não encontrada",
+    "notFound.message": "Desculpe, a página que você procura não existe. Pode ter sido movida ou removida.",
+    "notFound.cta": "Ir para o início",
+
     // Nav
     "nav.home": "Início",
     "nav.services": "Serviços",
