@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useLocation } from "wouter";
 import { LANGS, type Lang, translations } from "./translations";
 
 type I18nContextValue = {
@@ -13,6 +14,12 @@ const STORAGE_KEY = "ski-lang";
 
 function detectInitialLang(): Lang {
   if (typeof window === "undefined") return "es";
+  // La URL manda: /es/..., /en/..., /pt/... En rutas sin prefijo (ej. /admin)
+  // caemos a la preferencia guardada o al idioma del navegador.
+  const firstSegment = window.location.pathname.split("/").filter(Boolean)[0];
+  if (firstSegment && LANGS.includes(firstSegment as Lang)) {
+    return firstSegment as Lang;
+  }
   const stored = localStorage.getItem(STORAGE_KEY) as Lang | null;
   if (stored && LANGS.includes(stored)) return stored;
   const browser = navigator.language.slice(0, 2).toLowerCase();
@@ -23,12 +30,24 @@ function detectInitialLang(): Lang {
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => detectInitialLang());
+  const [rawLocation] = useLocation();
 
   const setLang = useCallback((newLang: Lang) => {
     setLangState(newLang);
     localStorage.setItem(STORAGE_KEY, newLang);
     document.documentElement.lang = newLang;
   }, []);
+
+  // Mantiene `lang` sincronizado con la URL real (útil para navegación con
+  // atrás/adelante del navegador, o links directos a /en/... o /pt/...).
+  // Rutas sin prefijo de idioma (ej. /admin) no tocan el idioma actual.
+  useEffect(() => {
+    const firstSegment = rawLocation.split("/").filter(Boolean)[0];
+    if (firstSegment && LANGS.includes(firstSegment as Lang) && firstSegment !== lang) {
+      setLangState(firstSegment as Lang);
+      localStorage.setItem(STORAGE_KEY, firstSegment);
+    }
+  }, [rawLocation, lang]);
 
   useEffect(() => {
     document.documentElement.lang = lang;
