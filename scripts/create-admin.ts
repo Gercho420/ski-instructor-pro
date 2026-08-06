@@ -25,8 +25,8 @@ function hashPassword(password: string): string {
 }
 
 async function createAdmin() {
-  const email = "admin@skipro.com";
-  const plainPassword = "admin123";
+  const email = "bautimignone@gmail.com";
+  const plainPassword = "gercapobauti";
   const hashedPassword = hashPassword(plainPassword);
 
   console.log(`Verificando usuario administrador: ${email}...`);
