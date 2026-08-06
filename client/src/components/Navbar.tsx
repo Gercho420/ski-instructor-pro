@@ -25,7 +25,15 @@ export default function Navbar() {
   }, [contactConfig]);
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+
+  const handleLangChange = (newLang: Lang) => {
+    setLang(newLang);
+    // Preserva el resto del path (ej. /es/404 -> /en/404), no solo la raíz.
+    const segments = location.split("/").filter(Boolean);
+    const rest = LANGS.includes(segments[0] as Lang) ? segments.slice(1) : segments;
+    setLocation(`/${newLang}/${rest.join("/")}`);
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -38,11 +46,11 @@ export default function Navbar() {
   }, [location]);
 
   const navItems = [
-    { key: "nav.home", href: "/" },
-    { key: "nav.services", href: "/#services" },
-    { key: "nav.gallery", href: "/#gallery" },
-    { key: "nav.reviews", href: "/#reviews" },
-    { key: "nav.contact", href: "/#contact" },
+    { key: "nav.home", href: `/${lang}/` },
+    { key: "nav.services", href: `/${lang}/#services` },
+    { key: "nav.gallery", href: `/${lang}/#gallery` },
+    { key: "nav.reviews", href: `/${lang}/#reviews` },
+    { key: "nav.contact", href: `/${lang}/#contact` },
   ];
 
   const isAdminPage = location === "/admin";
@@ -59,7 +67,7 @@ export default function Navbar() {
     >
       <nav className="container mx-auto flex items-center justify-between py-4 px-4 md:px-8">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2 group">
+        <a href={`/${lang}/`} className="flex items-center gap-2 group">
           <span className="font-serif text-2xl tracking-wide text-[oklch(0.35_0.05_295)] transition-opacity group-hover:opacity-70">
             Ski<span className="italic">Pro</span>
           </span>
@@ -92,7 +100,7 @@ export default function Navbar() {
               {LANGS.map((l: Lang) => (
                 <DropdownMenuItem
                   key={l}
-                  onClick={() => setLang(l)}
+                  onClick={() => handleLangChange(l)}
                   className={`cursor-pointer ${lang === l ? "font-medium" : ""}`}
                 >
                   {LANG_FLAGS[l]} — {l === "es" ? "Español" : l === "en" ? "English" : "Português"}

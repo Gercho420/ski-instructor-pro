@@ -34,10 +34,10 @@ export default function Footer() {
         <ShareButtons />
 
         <div className="flex items-center gap-6 text-xs font-sans font-light tracking-widest uppercase text-[oklch(0.50_0.03_295)]">
-          <a href="/#services" className="hover:text-[oklch(0.55_0.08_295)] transition-colors">{t("nav.services")}</a>
-          <a href="/#gallery" className="hover:text-[oklch(0.55_0.08_295)] transition-colors">{t("nav.gallery")}</a>
-          <a href="/#reviews" className="hover:text-[oklch(0.55_0.08_295)] transition-colors">{t("nav.reviews")}</a>
-          <a href="/#contact" className="hover:text-[oklch(0.55_0.08_295)] transition-colors">{t("nav.contact")}</a>
+          <a href={`/${lang}/#services`} className="hover:text-[oklch(0.55_0.08_295)] transition-colors">{t("nav.services")}</a>
+          <a href={`/${lang}/#gallery`} className="hover:text-[oklch(0.55_0.08_295)] transition-colors">{t("nav.gallery")}</a>
+          <a href={`/${lang}/#reviews`} className="hover:text-[oklch(0.55_0.08_295)] transition-colors">{t("nav.reviews")}</a>
+          <a href={`/${lang}/#contact`} className="hover:text-[oklch(0.55_0.08_295)] transition-colors">{t("nav.contact")}</a>
         </div>
 
         <div className="w-16 h-px bg-gradient-to-r from-transparent via-[oklch(0.55_0.06_295/0.3)] to-transparent" />
