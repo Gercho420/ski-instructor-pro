@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch, Router, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
@@ -12,35 +12,31 @@ import { I18nProvider } from "./i18n/I18nContext";
 import { LANGS, type Lang } from "./i18n/translations";
 import SeoHead from "./components/SeoHead";
 
-function LocalizedRoutes() {
-  return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
-
 // El panel admin no está indexado ni traducido por URL: vive fuera del
 // prefijo de idioma (/admin, sin /es /en /pt) porque no es contenido público.
+//
+// El resto de las rutas se resuelve a mano en base a los segmentos del path,
+// en vez de anidar un <Router base> de wouter: con solo dos páginas reales
+// (home y 404) por idioma no vale la pena, y evita un bug de wouter donde
+// "/es" (sin barra final) no matcheaba la ruta raíz del router anidado.
 function AppRouter() {
   const [location] = useLocation();
-  const firstSegment = location.split("/").filter(Boolean)[0];
+  const segments = location.split("/").filter(Boolean);
+  const [first, ...rest] = segments;
 
-  if (firstSegment === "admin") {
+  if (first === "admin") {
     return <Admin />;
   }
 
-  if (!firstSegment || !LANGS.includes(firstSegment as Lang)) {
+  if (!first || !LANGS.includes(first as Lang)) {
     return <NotFound />;
   }
 
-  return (
-    <Router base={`/${firstSegment}`}>
-      <LocalizedRoutes />
-    </Router>
-  );
+  if (rest.length === 0) {
+    return <Home />;
+  }
+
+  return <NotFound />;
 }
 
 function App() {
