@@ -68,9 +68,10 @@ export default function Gallery() {
               >
                 <img
                   src={photo.imageUrl}
-                  alt={photo.title || ""}
+                  alt={photo.title || t("gallery.altFallback")}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.20_0.03_295/0.6)] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                   {photo.title && (
@@ -91,7 +92,7 @@ export default function Gallery() {
             <div>
               <img
                 src={selectedPhoto.imageUrl}
-                alt={selectedPhoto.title || ""}
+                alt={selectedPhoto.title || t("gallery.altFallback")}
                 className="w-full max-h-[70vh] object-contain"
               />
               {(selectedPhoto.title || selectedPhoto.description) && (
