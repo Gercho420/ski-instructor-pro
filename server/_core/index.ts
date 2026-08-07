@@ -73,13 +73,38 @@ app.get("/sitemap.xml", (_req, res) => {
 const publicPath = path.resolve(__dirname, "public");
 app.use(express.static(publicPath));
 
-// La raíz "/" siempre redirige al idioma por defecto (español, mercado
-// principal del negocio). Es un default fijo, no detectado por
-// Accept-Language/geo: eso mantiene la respuesta consistente y cacheable
-// para buscadores (evita mostrarle contenido distinto a Googlebot según
-// cabeceras, lo cual puede leerse como cloaking).
-app.get("/", (_req, res) => {
-  res.redirect(301, "/es/");
+// La raíz "/" redirige al idioma preferido del visitante según la cabecera
+// Accept-Language que manda el navegador, con español como default si no
+// hay match o no hay cabecera. Usamos 302 (no 301) a propósito: al depender
+// de una cabecera que puede variar, un redirect "permanente" cacheado por el
+// navegador podría pegarle para siempre el idioma de la primera visita.
+// Esto no afecta el rastreo de buscadores: cada versión de idioma sigue
+// siendo accesible de forma directa y estable en /es/, /en/, /pt/ (así están
+// listadas en el sitemap con sus hreflang), que es lo que Google/bots de IA
+// realmente indexan.
+function detectPreferredLang(acceptLanguageHeader: string | undefined): (typeof SUPPORTED_LANGS)[number] {
+  if (!acceptLanguageHeader) return "es";
+  const parsed = acceptLanguageHeader
+    .split(",")
+    .map((part) => {
+      const [rawLang, qPart] = part.trim().split(";q=");
+      const q = qPart ? parseFloat(qPart) : 1;
+      return { primary: rawLang.split("-")[0].toLowerCase(), q: isNaN(q) ? 1 : q };
+    })
+    .sort((a, b) => b.q - a.q);
+
+  for (const { primary } of parsed) {
+    if ((SUPPORTED_LANGS as readonly string[]).includes(primary)) {
+      return primary as (typeof SUPPORTED_LANGS)[number];
+    }
+  }
+  return "es";
+}
+
+app.get("/", (req, res) => {
+  const lang = detectPreferredLang(req.headers["accept-language"]);
+  res.set("Vary", "Accept-Language");
+  res.redirect(302, `/${lang}/`);
 });
 
 app.get("*", (_req, res) => {
