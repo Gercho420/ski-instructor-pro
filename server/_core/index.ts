@@ -69,9 +69,13 @@ app.get("/sitemap.xml", (_req, res) => {
   );
 });
 
-// Servir frontend en producción
+// Servir frontend en producción. index:false evita que express.static
+// responda solo con index.html cuando piden "/" (eso pisaba silenciosamente
+// nuestro redirect de idioma de más abajo, sin importar el orden en que se
+// registraran ambos). Los archivos estáticos reales (JS, CSS, imágenes)
+// siguen sirviéndose normal por su nombre exacto.
 const publicPath = path.resolve(__dirname, "public");
-app.use(express.static(publicPath));
+app.use(express.static(publicPath, { index: false }));
 
 // La raíz "/" redirige al idioma preferido del visitante según la cabecera
 // Accept-Language que manda el navegador, con español como default si no
