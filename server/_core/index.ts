@@ -3,6 +3,9 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { createContext } from "./context";
 import { appRouter } from "../routers";
 import path from "path";
+import fs from "fs";
+import { renderSeoHtml } from "../seoRender";
+import type { Lang } from "../../client/src/i18n/translations";
 
 const app = express();
 
@@ -109,6 +112,29 @@ app.get("/", (req, res) => {
   const lang = detectPreferredLang(req.headers["accept-language"]);
   res.set("Vary", "Accept-Language");
   res.redirect(302, `/${lang}/`);
+});
+
+// index.html base en memoria (Vite ya resolvió %VITE_SITE_URL% y demás env
+// vars al buildear, así que este template ya tiene URLs reales). Lo leemos
+// una sola vez al arrancar; no cambia hasta el próximo deploy.
+const indexHtmlTemplate = fs.readFileSync(path.join(publicPath, "index.html"), "utf-8");
+
+// /es/, /en/, /pt/ (con o sin barra final) devuelven el HTML con
+// title/description/canonical/hreflang/JSON-LD horneados con datos reales
+// (reseñas y precios de la DB) para ese idioma puntual. Esto es lo que
+// realmente ven los bots que no ejecutan JavaScript (GPTBot, ClaudeBot,
+// PerplexityBot, etc.) — SeoHead.tsx hace lo mismo del lado del cliente
+// para navegadores reales, pero eso no les sirve a esos bots.
+app.get(/^\/(es|en|pt)\/?$/, async (req, res) => {
+  const lang = req.params[0] as Lang;
+  try {
+    const siteUrl = getSiteUrl() || `${req.protocol}://${req.get("host")}`;
+    const html = await renderSeoHtml(lang, indexHtmlTemplate, siteUrl);
+    res.type("html").send(html);
+  } catch (err) {
+    console.error("[seoRender] Falló el render con datos reales, sirviendo HTML base:", err);
+    res.type("html").send(indexHtmlTemplate);
+  }
 });
 
 app.get("*", (_req, res) => {
