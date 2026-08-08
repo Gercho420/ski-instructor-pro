@@ -10,7 +10,7 @@
 
 import { getApprovedReviews, getConfigByCategory, getGalleryPhotos } from "./db";
 import { translations, LANGS, type Lang } from "../client/src/i18n/translations";
-import { SERVICE_DEFS } from "../shared/const";
+import { SERVICE_DEFS, getServiceContent } from "../shared/const";
 
 function escapeHtml(s: string): string {
   return s
@@ -26,17 +26,30 @@ function configMapFrom(rows: { configKey: string; configValue: string }[]): Reco
   return map;
 }
 
-async function buildServices() {
-  const rows = await getConfigByCategory("services");
-  const map = configMapFrom(rows);
-  return SERVICE_DEFS.map((s) => ({
-    name: map[`service_${s.key}_title`] || s.defaultTitle,
-    description: map[`service_${s.key}_desc`] || s.defaultDesc,
-    // Precio en texto libre (ver nota arriba): no hay forma confiable de saber
-    // qué moneda usó el admin al tipearlo, así que no lo mandamos como
-    // "price"/"priceCurrency" estructurado — solo como texto descriptivo.
-    priceText: map[`service_${s.key}_price`] || "",
-  }));
+async function buildServices(lang: Lang) {
+  // services_<lang>: config cargada por el admin específicamente para este
+  // idioma. "services" (sin sufijo): categoría legacy de antes de que
+  // existiera este fix, se usa solo como fallback para no perder contenido
+  // ya cargado. Ver comentario de getServiceContent en shared/const.ts.
+  const [langRows, legacyRows] = await Promise.all([
+    getConfigByCategory(`services_${lang}`),
+    getConfigByCategory("services"),
+  ]);
+  const langMap = configMapFrom(langRows);
+  const legacyMap = configMapFrom(legacyRows);
+  const translate = (key: string) => translations[lang]?.[key] ?? translations.es[key];
+
+  return SERVICE_DEFS.map((s) => {
+    const content = getServiceContent(s, langMap, legacyMap, translate);
+    return {
+      name: content.title,
+      description: content.description,
+      // Precio en texto libre (ver nota arriba): no hay forma confiable de saber
+      // qué moneda usó el admin al tipearlo, así que no lo mandamos como
+      // "price"/"priceCurrency" estructurado — solo como texto descriptivo.
+      priceText: content.price,
+    };
+  });
 }
 
 async function buildReviewsBlock() {
@@ -95,7 +108,7 @@ export async function renderSeoHtml(lang: Lang, template: string, siteUrl: strin
   const canonicalUrl = `${siteUrl}/${lang}/`;
 
   const [services, reviewsBlock, images, contact] = await Promise.all([
-    buildServices(),
+    buildServices(lang),
     buildReviewsBlock(),
     buildImages(siteUrl),
     buildContact(),
