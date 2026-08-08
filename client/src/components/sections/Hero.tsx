@@ -47,7 +47,7 @@ export default function Hero() {
       {/* Background image */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/hero-ski_c1cd739e.webp"
+          src="/hero-ski_c1cd739e.jpg"
           alt=""
           role="presentation"
           width={1920}
