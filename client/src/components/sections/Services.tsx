@@ -1,25 +1,40 @@
 import { useI18n } from "@/i18n/I18nContext";
+import { translations } from "@/i18n/translations";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SERVICE_DEFS } from "@shared/const";
+import { SERVICE_DEFS, getServiceContent } from "@shared/const";
 
-export default function Services() {
-  const { t } = useI18n();
-  const { data: servicesData, isLoading } = trpc.config.getByCategory.useQuery({ category: "services" });
-
-  const configMap: Record<string, string> = {};
-  if (Array.isArray(servicesData)) {
-    servicesData.forEach((c: any) => {
-      configMap[c.configKey] = c.configValue;
+function toConfigMap(rows: unknown): Record<string, string> {
+  const map: Record<string, string> = {};
+  if (Array.isArray(rows)) {
+    rows.forEach((c: any) => {
+      map[c.configKey] = c.configValue;
     });
   }
+  return map;
+}
 
-  const services = SERVICE_DEFS.map((s) => ({
-    id: s.key,
-    title: configMap[`service_${s.key}_title`] || s.defaultTitle,
-    description: configMap[`service_${s.key}_desc`] || s.defaultDesc,
-    price: configMap[`service_${s.key}_price`] || "",
-  }));
+export default function Services() {
+  const { t, lang } = useI18n();
+  // Config específica del idioma actual (lo que carga el admin por pestaña
+  // de idioma). Fallback a la categoría legacy "services" (pre-fix, sin
+  // idioma) para no perder contenido cargado antes de este cambio.
+  const { data: servicesData, isLoading } = trpc.config.getByCategory.useQuery({
+    category: `services_${lang}`,
+  });
+  const { data: legacyServicesData } = trpc.config.getByCategory.useQuery({ category: "services" });
+
+  const configMap = toConfigMap(servicesData);
+  const legacyConfigMap = toConfigMap(legacyServicesData);
+  // A diferencia de t(), esto devuelve undefined si falta la key en vez del
+  // string de la key — es lo que necesita getServiceContent para su cadena
+  // de fallback (DB por idioma > DB legacy > traducción > default en código).
+  const translate = (key: string) => translations[lang]?.[key] ?? translations.es[key];
+
+  const services = SERVICE_DEFS.map((s) => {
+    const content = getServiceContent(s, configMap, legacyConfigMap, translate);
+    return { id: s.key, ...content };
+  });
 
   return (
     <section id="services" className="relative py-24 px-4 scroll-mt-20">
