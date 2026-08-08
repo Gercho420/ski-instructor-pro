@@ -532,9 +532,16 @@ function SettingsAdmin({ lang, t }: { lang: string; t: (key: string) => string }
   };
 
   // ---- Tarifas ----
+  // Igual que "Textos del sitio" arriba: una pestaña por idioma, guardado en
+  // la categoría services_<lang>. La categoría legacy "services" (sin
+  // sufijo de idioma) solo se lee como valor inicial para no perder contenido
+  // cargado antes de este fix — una vez que guardás en una pestaña, esa
+  // pestaña pasa a tener su propia config y deja de mirar la legacy.
+  const [pricingLang, setPricingLang] = useState<string>(lang);
   const { data: pricingConfig, isLoading: pricingLoading } = trpc.config.getByCategory.useQuery({
-    category: "services",
+    category: `services_${pricingLang}`,
   });
+  const { data: legacyPricingConfig } = trpc.config.getByCategory.useQuery({ category: "services" });
   type PricingForm = Record<string, { title: string; desc: string; price: string }>;
   const [pricing, setPricing] = useState<PricingForm>(() => {
     const initial: PricingForm = {};
@@ -543,23 +550,29 @@ function SettingsAdmin({ lang, t }: { lang: string; t: (key: string) => string }
     });
     return initial;
   });
-  const [pricingLoaded, setPricingLoaded] = useState(false);
+  const [loadedPricingLang, setLoadedPricingLang] = useState<string | null>(null);
 
-  if (Array.isArray(pricingConfig) && !pricingLoaded) {
+  if (Array.isArray(pricingConfig) && loadedPricingLang !== pricingLang) {
     const map: Record<string, string> = {};
     pricingConfig.forEach((c: any) => {
       map[c.configKey] = c.configValue;
     });
+    const legacyMap: Record<string, string> = {};
+    if (Array.isArray(legacyPricingConfig)) {
+      legacyPricingConfig.forEach((c: any) => {
+        legacyMap[c.configKey] = c.configValue;
+      });
+    }
     const next: PricingForm = {};
     SERVICE_DEFS.forEach((s) => {
       next[s.key] = {
-        title: map[`service_${s.key}_title`] || s.defaultTitle,
-        desc: map[`service_${s.key}_desc`] || s.defaultDesc,
-        price: map[`service_${s.key}_price`] || "",
+        title: map[`service_${s.key}_title`] || legacyMap[`service_${s.key}_title`] || "",
+        desc: map[`service_${s.key}_desc`] || legacyMap[`service_${s.key}_desc`] || "",
+        price: map[`service_${s.key}_price`] || legacyMap[`service_${s.key}_price`] || "",
       };
     });
     setPricing(next);
-    setPricingLoaded(true);
+    setLoadedPricingLang(pricingLang);
   }
 
   const updatePricing = (key: string, field: "title" | "desc" | "price", value: string) => {
@@ -573,9 +586,9 @@ function SettingsAdmin({ lang, t }: { lang: string; t: (key: string) => string }
       { configKey: `service_${s.key}_price`, configValue: pricing[s.key]?.price || "" },
     ]);
     try {
-      await saveMutation.mutateAsync({ category: "services", items });
+      await saveMutation.mutateAsync({ category: `services_${pricingLang}`, items });
       toast.success(t("admin.settings.saved"));
-      utils.config.getByCategory.invalidate({ category: "services" });
+      utils.config.getByCategory.invalidate({ category: `services_${pricingLang}` });
     } catch (err: any) {
       toast.error(err?.message || t("admin.settings.error"));
     }
@@ -725,7 +738,24 @@ function SettingsAdmin({ lang, t }: { lang: string; t: (key: string) => string }
 
       {/* Tarifas */}
       <div className="corner-bracket p-6 bg-[oklch(0.97_0.012_300/0.5)] backdrop-blur-sm rounded-2xl border border-[oklch(0.90_0.02_300/0.3)] space-y-6">
-        <h2 className="font-serif text-xl text-[oklch(0.30_0.05_295)]">{t("admin.settings.pricing")}</h2>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h2 className="font-serif text-xl text-[oklch(0.30_0.05_295)]">{t("admin.settings.pricing")}</h2>
+          <div className="flex gap-1">
+            {TEXT_LANGS.map((l) => (
+              <button
+                key={l}
+                onClick={() => setPricingLang(l)}
+                className={`px-3 py-1 rounded-full text-xs uppercase tracking-wider transition-colors ${
+                  pricingLang === l
+                    ? "bg-[oklch(0.55_0.08_295)] text-white"
+                    : "text-[oklch(0.50_0.04_295)] border border-[oklch(0.70_0.04_295/0.3)]"
+                }`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {pricingLoading ? (
           <Skeleton className="h-40 rounded-lg" />
